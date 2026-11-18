@@ -81,7 +81,18 @@ test('configure explicit multiple roots and read-only direct file permissions', 
     { path: await fs.realpath(f.workspace), permissions: ['read'] },
     { path: await fs.realpath(other), permissions: ['read'] },
   ]);
-  await assert.rejects(new PathPolicy(config).authorize(path.join(f.workspace, 'new.txt'), 'write', { targetMayNotExist: true }), /Permission write denied/);
+  const policy = new PathPolicy(config);
+  const canonicalWorkspace = config.allowedRoots[0].path;
+  // Windows temporary paths may use 8.3 names; configure stores the canonical spelling.
+  assert.equal((await policy.authorize(canonicalWorkspace, 'read')).realPath, canonicalWorkspace);
+  await assert.rejects(policy.authorize(path.join(canonicalWorkspace, 'new.txt'), 'write', { targetMayNotExist: true }), /Permission write denied/);
+
+  // Matching realpath alone must not authorize an alias outside the configured roots.
+  const alias = path.join(await fs.realpath(f.root), 'workspace-alias');
+  await fs.symlink(canonicalWorkspace, alias, process.platform === 'win32' ? 'junction' : 'dir');
+  assert.equal(await fs.realpath(alias), canonicalWorkspace);
+  await assert.rejects(policy.authorize(alias, 'read'), /Path is outside configured roots/);
+  await assert.rejects(policy.authorize(path.join(alias, 'new.txt'), 'write', { targetMayNotExist: true }), /Path is outside configured roots/);
 });
 
 test('configure rejects repository config destinations and filesystem-wide roots', async t => {
@@ -145,8 +156,9 @@ test('native file/process core works with WSL and Codex entirely absent', async 
     assert.ok(Date.now() < until, 'Native process must finish');
     await delay(10);
   }
-  assert.equal(processes.output(started.session_id).stdout, await fs.realpath(f.workspace));
   assert.equal(processes.output(started.session_id).exit_code, 0);
+  // The child may preserve a Windows 8.3 cwd spelling; compare directory identity.
+  assert.equal(await fs.realpath(processes.output(started.session_id).stdout), await fs.realpath(f.workspace));
   await assert.rejects(processes.start({ runtime: 'wsl', executable: process.execPath, cwd: f.workspace }), /WSL_DISABLED/);
   await assert.rejects(codex.discover(), { code: 'CODEX_DISABLED' });
 });

@@ -430,8 +430,8 @@
     },
     {
       "path": "tests/configure-portability.test.mjs",
-      "bytes": 12415,
-      "sha256": "aefa11d8b2e3bef52e9f74fb8d023ee4e0d0d40d3c001813ee72a13bf0f41ff6"
+      "bytes": 13355,
+      "sha256": "1b2636af44cbbb749dcf933ba0cfddecea9ba176d03637694f5514212f14b4b7"
     },
     {
       "path": "tests/fixtures/bridge-fixture.mjs",
