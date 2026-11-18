@@ -15,8 +15,8 @@ jobs:
         node: [22, 24]
     runs-on: ${{ matrix.os }}
     env:
-      AIHUB_REMOTE_AGENT_STATE: ${{ runner.temp }}/aihub-agent-state
-      AIHUB_REMOTE_AGENT_CONFIG: ${{ runner.temp }}/aihub-agent-config.json
+      AIHUB_REMOTE_AGENT_STATE: ${{ github.workspace }}/../aihub-agent-state
+      AIHUB_REMOTE_AGENT_CONFIG: ${{ github.workspace }}/../aihub-agent-config.json
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

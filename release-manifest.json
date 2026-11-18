@@ -35,8 +35,8 @@
     },
     {
       "path": ".github/workflows/test.yml",
-      "bytes": 1240,
-      "sha256": "971fbfb1a57335d0efa1fe9cbdb4363174a25c7ef54f67f719d5ba9b51323ca0"
+      "bytes": 1256,
+      "sha256": "d37970b7e798fe1cd24676a46add58361c569a041791ecae354497c589ed379e"
     },
     {
       "path": ".gitignore",
