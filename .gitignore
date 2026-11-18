@@ -1,0 +1,37 @@
+# Runtime and credentials must stay outside published source.
+node_modules/
+state/
+logs/
+dist/
+coverage/
+.env
+.env.*
+*.local.json
+*.local.toml
+*.local.yaml
+*.local.yml
+config.json
+credentials.json
+secrets.json
+*-receipts.json
+tunnel-client*.json
+tunnel-client*.pid
+*.log
+*.jsonl
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+*.key
+*.p12
+*.pfx
+*.zip
+*.tar.gz
+*.sha256
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+# Raw operator evidence can contain paths, credentials or application content.
+docs/evidence/
+screenshots/

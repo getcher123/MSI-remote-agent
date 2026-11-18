@@ -1,0 +1,31 @@
+{
+  "name": "aihub-remote-agent",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Local MCP agent for authorized files, native and WSL processes, optional Codex Connect and local MCP servers.",
+  "scripts": {
+    "configure": "node scripts/configure.mjs",
+    "self-test": "node server/index.mjs --self-test",
+    "test": "node --test",
+    "check:privacy": "node scripts/check-privacy.mjs",
+    "check:routes": "node scripts/check-agent-routes.mjs",
+    "build:manifest": "node scripts/build-release-manifest.mjs",
+    "validate": "node scripts/validate-package.mjs",
+    "check": "npm run check:privacy && npm run check:routes && npm test && npm run validate",
+    "test:windows": "node scripts/smoke-windows.mjs",
+    "test:installer": "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File scripts/smoke-install.ps1"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/getcher123/MSI-remote-agent.git"
+  },
+  "homepage": "https://github.com/getcher123/MSI-remote-agent#readme",
+  "bugs": {
+    "url": "https://github.com/getcher123/MSI-remote-agent/issues"
+  }
+}

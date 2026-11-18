@@ -1,0 +1,32 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aihub-remote-agent",
+  "version": "0.3.0",
+  "description": "Local Windows/WSL agent for files, processes, Codex Connect and explicitly registered MCP servers.",
+  "author": {
+    "name": "AIHub Works"
+  },
+  "logo": "./assets/icon.svg",
+  "composerIcon": "./assets/icon.svg",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "AIHub Remote Agent",
+        "shortDescription": "Управление ПК и Codex",
+        "longDescription": "Локальный агент для файлов, процессов, WSL, Codex Connect и прямого обращения к зарегистрированным MCP приложений.",
+        "developerName": "AIHub Works",
+        "category": "Productivity",
+        "capabilities": [
+          "Interactive"
+        ],
+        "defaultPrompt": [
+          "Проверь локальный агент и доступность Codex Connect.",
+          "Прочитай точную Codex-сессию и дай текущий статус.",
+          "Запусти разрешённую локальную команду и покажи результат."
+        ]
+      }
+    }
+  },
+  "repository": "https://github.com/getcher123/MSI-remote-agent",
+  "license": "MIT"
+}

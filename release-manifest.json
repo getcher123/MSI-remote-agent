@@ -1,0 +1,507 @@
+{
+  "schemaVersion": 1,
+  "name": "aihub-remote-agent",
+  "version": "0.3.0",
+  "files": [
+    {
+      "path": ".editorconfig",
+      "bytes": 140,
+      "sha256": "9472fec71612f05dcdf89350bf53d7bd488fa22086212dfc94ecaced6da9fc74"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 73,
+      "sha256": "2e40e7ee86c57c7af7224f214b01507679f1d3afef3b3212d5d2c3fb39c6296a"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+      "bytes": 691,
+      "sha256": "0f9681f8ff69b0490f42422d37dcf576ea150dc45e0da1e2591efe47932d00c0"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+      "bytes": 455,
+      "sha256": "3dad09592eef8a31d51bc5c4c101557262e7f6e57112c4d33204ea269b6353e4"
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "bytes": 145,
+      "sha256": "3f32bd295d1462a4844d206458a300cb8b6584e99ebc98daf3f17ac65d51835a"
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "bytes": 666,
+      "sha256": "67f6d95c22e9b1a9673446435f8a3d4ab89db8c379867a8dad4c07e17f3d8c83"
+    },
+    {
+      "path": ".github/workflows/test.yml",
+      "bytes": 1240,
+      "sha256": "971fbfb1a57335d0efa1fe9cbdb4363174a25c7ef54f67f719d5ba9b51323ca0"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 497,
+      "sha256": "79c03e2cb0f59e895eaa54d2a8d32b4b0265818846bfc126584d5e22fbde834d"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 5567,
+      "sha256": "bb4425dbfc85851cb3c9d01935d217716b345203261e25c761b3a132b6cbd191"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 1350,
+      "sha256": "5e5f1baf8e7d5a8646ce0057a629b12cb29f85cfd2d15b4d47ebd92bb1c11230"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "bytes": 4109,
+      "sha256": "1c78bb99f82185eb267d54e723fdc4b836ce3c34b7fba83d34548424d19f99d2"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1068,
+      "sha256": "b968753b255a6b31b6b6be0ea20fa33899c20dec62be4a557118564eb748d57e"
+    },
+    {
+      "path": "README.md",
+      "bytes": 16984,
+      "sha256": "db8a05ff1c078b12cce27dfb916b7dfc12dbfd43603b89829e51b2b236d594d4"
+    },
+    {
+      "path": "ROADMAP.md",
+      "bytes": 4883,
+      "sha256": "57514293d342ee0448e0e52d4302c1a8a6bdd42ca99511c6d26f7b22ef7ce13f"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 625,
+      "sha256": "9c3a997717c52c20327a5ada440061ce18eadf508f98197078544ec863701035"
+    },
+    {
+      "path": "assets/icon.svg",
+      "bytes": 592,
+      "sha256": "117fce5b3877f1758521267af9cbf4d46094f3f80ced84314ae1d0940342bfd5"
+    },
+    {
+      "path": "config/default-config.json",
+      "bytes": 1467,
+      "sha256": "e6f2eb1afac8469b16afb3908712b8b461e4b24acfada5d79480ac654437d48d"
+    },
+    {
+      "path": "docs/AGENT_MIGRATION_RU.md",
+      "bytes": 3990,
+      "sha256": "2615fde4a5416810d5a91fe3c9d068307c4f0a26b354df016c5078d411664508"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "bytes": 5468,
+      "sha256": "0261227c987264c864704b3c606879818c589c33586f8fd19f840a9afbb9ed00"
+    },
+    {
+      "path": "docs/CODEX_CONNECT_COMPATIBILITY.md",
+      "bytes": 6028,
+      "sha256": "390c01bb40dab4e6fbdd34ad76675275bd7f0af941f4b82c78f5bbaa01f9b49a"
+    },
+    {
+      "path": "docs/INSTALLATION.md",
+      "bytes": 10233,
+      "sha256": "691acb21a678f240cced987058386c90db7e6c17335c0b08f716d0244cec09cd"
+    },
+    {
+      "path": "docs/LOCAL_MCP_RU.md",
+      "bytes": 7131,
+      "sha256": "cc9ffeaa74d02bc27d7228d12d89c7cbdcac6da15ff669256a83bf7aa5c51936"
+    },
+    {
+      "path": "docs/RUNBOOK.md",
+      "bytes": 5810,
+      "sha256": "cb162a34e0ea97c69a71701918947507a069b779bbe7926466d262a10c0be9e7"
+    },
+    {
+      "path": "docs/SECURITY.md",
+      "bytes": 7733,
+      "sha256": "febe64e99a3b8a796e24149266b2b515f53247c77aeb748b10bd9eda3de69834"
+    },
+    {
+      "path": "docs/TESTING.md",
+      "bytes": 4441,
+      "sha256": "9eae605030f6cc3bad798c3365ae5842c0083444331c6157124e337a803a45df"
+    },
+    {
+      "path": "docs/THREAT_MODEL.md",
+      "bytes": 3387,
+      "sha256": "c23687ba54a3ee9fe1b9402f2fe349a689c3fa9be433f298ac260ec2660d4bf2"
+    },
+    {
+      "path": "docs/TOOLS.md",
+      "bytes": 4764,
+      "sha256": "75c5aa768672971dc833edfbac544676b08df6a95ea27df3691bbcd1afa8493c"
+    },
+    {
+      "path": "docs/UPGRADE_RU.md",
+      "bytes": 3332,
+      "sha256": "641a716832d9231f7ae1ae9206e130ee8828638ab7476e3020d2b9b933b92942"
+    },
+    {
+      "path": "launcher/AIHub-Remote-Agent-Configure-Tunnel.cmd",
+      "bytes": 124,
+      "sha256": "29a29d001e083bf350f1f49f61e2c34f90c5de28497b59380ba66276df67499f"
+    },
+    {
+      "path": "launcher/AIHub-Remote-Agent-Install.cmd",
+      "bytes": 137,
+      "sha256": "cd61e421c29fe5511fd9b1fa3350a53b3bc7a2d965a9790b47827a89665f7ed5"
+    },
+    {
+      "path": "launcher/AIHub-Remote-Agent-Rollback.cmd",
+      "bytes": 116,
+      "sha256": "a01e48a0746df620ffe0e807fc3bbdfee3b7ed24fc11c6480555edd634326d62"
+    },
+    {
+      "path": "launcher/AIHub-Remote-Agent-Start.cmd",
+      "bytes": 113,
+      "sha256": "c4d7deca2d637352fe43deb01dd99c585416b57cc30881394b79b7c5ca7d39cc"
+    },
+    {
+      "path": "launcher/AIHub-Remote-Agent-Status.cmd",
+      "bytes": 114,
+      "sha256": "5619ff3cf3fdcfe8748b595fc6fdc2e2831f151502acc7117a3f44bf65d6dc7b"
+    },
+    {
+      "path": "launcher/AIHub-Remote-Agent-Stop.cmd",
+      "bytes": 112,
+      "sha256": "89dade2c1122fba8fbaf1602f38db1675d5561bbed5c8c6c707e51cf7d5307c1"
+    },
+    {
+      "path": "launcher/AIHub-Remote-Agent-Uninstall.cmd",
+      "bytes": 117,
+      "sha256": "91359cee6f1e6af30c62196507da28449af554d2d8fabc182a37a172ae1176c3"
+    },
+    {
+      "path": "launcher/Common.ps1",
+      "bytes": 3735,
+      "sha256": "e159741e8d896b7159acdbdb8a4ed0bab7e1c958e68bbbe152cb993845a8d744"
+    },
+    {
+      "path": "launcher/Configure-Tunnel.ps1",
+      "bytes": 849,
+      "sha256": "992180227f153b82fc78b60bbf6eb572c6e90b2decc81ba6cb26d3cc72bf9421"
+    },
+    {
+      "path": "launcher/Install.ps1",
+      "bytes": 4045,
+      "sha256": "704bd74650adc87a20f592fec18b0f5fe2ec87975480f2af24fb43380bce0ab2"
+    },
+    {
+      "path": "launcher/Rollback.ps1",
+      "bytes": 910,
+      "sha256": "d62514d75f9eb41a22356ce7e44f81b1e553f0f656433669c2fd860607fe1c9b"
+    },
+    {
+      "path": "launcher/Start.ps1",
+      "bytes": 2166,
+      "sha256": "03a0a69a0b27313835d70c67c5e945ccb5af15bc9a563969a56dd7974d15aa3b"
+    },
+    {
+      "path": "launcher/Status.ps1",
+      "bytes": 1164,
+      "sha256": "eb2cc8f460347471c304623e7ec4d5c24d8abe2d19d3f504387bcd428c73aab8"
+    },
+    {
+      "path": "launcher/Stop.ps1",
+      "bytes": 1812,
+      "sha256": "4bb48e52176b331a0d945fc766a5124354d1adbd00c7899940834fd6388d92ef"
+    },
+    {
+      "path": "launcher/Uninstall.ps1",
+      "bytes": 996,
+      "sha256": "46397c94fa34e3a17b98837dd185cf4f7995583a167e7c4841d35f41dd734be3"
+    },
+    {
+      "path": "mcp.json",
+      "bytes": 272,
+      "sha256": "e15be304e7c0a79b3b9c5787ab1ec4d43ac147be3bf50f10c792d3e7a5281eda"
+    },
+    {
+      "path": "package.json",
+      "bytes": 1201,
+      "sha256": "73e117e5110a550112e4cb1e03450eee9fb7410bd9676daf1ae80853a294057a"
+    },
+    {
+      "path": "plugin.json",
+      "bytes": 1358,
+      "sha256": "ee0e709424c5e18b0756a64b01c0b761ff834bab195f65df802d9a4a6e767ca0"
+    },
+    {
+      "path": "scripts/build-release-manifest.mjs",
+      "bytes": 1291,
+      "sha256": "722e247e50894bc99ca345c63d0e7079d7592809a1c6fb5ceeab93cc02536e81"
+    },
+    {
+      "path": "scripts/check-agent-routes.mjs",
+      "bytes": 2254,
+      "sha256": "59af7d85b72b9a6a751243f65e161eb535e421e87f60cca94b0eab0351fd62fb"
+    },
+    {
+      "path": "scripts/check-privacy.mjs",
+      "bytes": 1165,
+      "sha256": "79151e50a273e2124bbf51ac456d179de571b2cecd4a88a8550d091f5ce53fcc"
+    },
+    {
+      "path": "scripts/configure.mjs",
+      "bytes": 5342,
+      "sha256": "97943836b6c789b40ebc333387455943181d77477456c18eadbb117949908fe6"
+    },
+    {
+      "path": "scripts/lib/privacy.mjs",
+      "bytes": 3142,
+      "sha256": "19350514054c796644f3ef5b2022567ab5152b81dba681f82ce255fa741d0eff"
+    },
+    {
+      "path": "scripts/lib/release-files.mjs",
+      "bytes": 2270,
+      "sha256": "bd4b0a23b9027fed64b013b64d6c6c74cce007c8d74b4160b93feafea6a2da4c"
+    },
+    {
+      "path": "scripts/local-mcp-cli.mjs",
+      "bytes": 2247,
+      "sha256": "c1ebef536a904f559d71d35a03ae4ca6d61bdac37596d7879958125efadb7b70"
+    },
+    {
+      "path": "scripts/smoke-install.ps1",
+      "bytes": 6073,
+      "sha256": "f5c35c577a8c690a6bfdab6a0fe96d1a5db3b33b4e92c2c6e8f019de14114885"
+    },
+    {
+      "path": "scripts/smoke-local-mcp.mjs",
+      "bytes": 7645,
+      "sha256": "3639f51ed0dc831495f6b797a0738aff98bc639ada80049d721b464ef1560960"
+    },
+    {
+      "path": "scripts/smoke-mcp-wsl.mjs",
+      "bytes": 5253,
+      "sha256": "15cdb0bf97b00511f13b9e8a836167f36f54215ffdaaaf585f624f0a47404816"
+    },
+    {
+      "path": "scripts/smoke-options.mjs",
+      "bytes": 1181,
+      "sha256": "4303d4a742aa3fd2c4e4a839702ad2822b4a3190d2963b21e315e30b29676b47"
+    },
+    {
+      "path": "scripts/smoke-windows.mjs",
+      "bytes": 7133,
+      "sha256": "b4d06ebaee6c5bf32b5706151d256e1dcc458d9c15500f1e601aa32431ad4e4a"
+    },
+    {
+      "path": "scripts/validate-package.mjs",
+      "bytes": 3857,
+      "sha256": "7ec9ff3ed445f0bb91faeac86554719a5e9eaba195a82c20c7e751a4852f4428"
+    },
+    {
+      "path": "server/index.mjs",
+      "bytes": 1798,
+      "sha256": "4fb37ae938479f1adc0e180b6386cbcc46fc18e207ec0f61809c730ce521a6c3"
+    },
+    {
+      "path": "server/lib/audit.mjs",
+      "bytes": 3653,
+      "sha256": "fca05bcf517497e99e908dd986472b6b44b961dacfd8ae6fdacd3ce49d8afec3"
+    },
+    {
+      "path": "server/lib/codex-bridge.mjs",
+      "bytes": 14346,
+      "sha256": "77981eeb164ec91f552c4750347700fb26bd785c22f8242bb2d797bde8838e6d"
+    },
+    {
+      "path": "server/lib/config.mjs",
+      "bytes": 4743,
+      "sha256": "8db27d257e980dbfd19dcaa790e69c231028f9d0c6605e71dd9a0e0664634285"
+    },
+    {
+      "path": "server/lib/local-mcp-bridge.mjs",
+      "bytes": 12352,
+      "sha256": "3bec1d2abadea8d8515fc6f23d9d937110bb0124f1f95eb6adbd8e7b0f0da273"
+    },
+    {
+      "path": "server/lib/local-mcp-tools.mjs",
+      "bytes": 6794,
+      "sha256": "39ceefb3b8cad44937dbc8d68ee372d653786abb5123bb91b7fae4a488b7abb7"
+    },
+    {
+      "path": "server/lib/mcp-client.mjs",
+      "bytes": 25812,
+      "sha256": "d8862be2dbfed6d68f07a8ded7ec43edf1f46a7aef7558fa6a9b9d2f593653ae"
+    },
+    {
+      "path": "server/lib/mcp-operation-store.mjs",
+      "bytes": 16071,
+      "sha256": "2cb787de9d404780624682410ed4f62a36e79e2040827cb83a8af644d8019b66"
+    },
+    {
+      "path": "server/lib/mcp-registry.mjs",
+      "bytes": 30038,
+      "sha256": "8b3bd4df0eacf848af2333be3dfd96cbfc0cb3db25ec0279551645d95495813c"
+    },
+    {
+      "path": "server/lib/mcp-reply.mjs",
+      "bytes": 1412,
+      "sha256": "0513a6ad10982d6981a27a8fd635b295811833e7ddb578cec837c62d6b7700f4"
+    },
+    {
+      "path": "server/lib/mcp-server.mjs",
+      "bytes": 4851,
+      "sha256": "d13e69300eda86e420a7059d2aaf313df4b8f002d6db3473fc12371e359e97ec"
+    },
+    {
+      "path": "server/lib/output-buffer.mjs",
+      "bytes": 1315,
+      "sha256": "91b542af8041b0dba3f4005b6d7c70f44407ca66ee507e08a3eb43014402b669"
+    },
+    {
+      "path": "server/lib/path-policy.mjs",
+      "bytes": 3753,
+      "sha256": "e6c02f282a7085bb1f3faaa29ca03e3d9eefad70a6bcd5bdbef05e98fb3bec55"
+    },
+    {
+      "path": "server/lib/process-manager.mjs",
+      "bytes": 15975,
+      "sha256": "d06d4d305b47874fa229da9a2aab8a818f11c4b2225d3e1eb14f104840239504"
+    },
+    {
+      "path": "server/lib/tools.mjs",
+      "bytes": 20250,
+      "sha256": "35d0b557b57c5dcfc2b8efd338b6ced18c359fe3721e95abddc4385f66e4afda"
+    },
+    {
+      "path": "server/lib/util.mjs",
+      "bytes": 4341,
+      "sha256": "07b2d812168f8bf2a2660b2e02c9b43f43af2cf0a08c95d1e410570d93175426"
+    },
+    {
+      "path": "server/lib/wsl-control.mjs",
+      "bytes": 2368,
+      "sha256": "330058097cd459ce21afb8fae89010f2321862630cd86d884c40197004971eef"
+    },
+    {
+      "path": "skills/remote-machine/SKILL.md",
+      "bytes": 3080,
+      "sha256": "0ccad992ef35edacd126ae06a5a9354f5f9c1b4d1c125bdb7ae1b87cd9a4cf84"
+    },
+    {
+      "path": "skills/remote-machine/references/codex-control.md",
+      "bytes": 2129,
+      "sha256": "6e4a7336807764da8d8d318aa8dd5b8864c2171d710e3b5d2bd574514da93aeb"
+    },
+    {
+      "path": "skills/remote-machine/references/local-mcp.md",
+      "bytes": 2792,
+      "sha256": "eb08ea166c71e0d4ee4ae76776c8c77b58dde03b1b3b06acb11d38a299941a6f"
+    },
+    {
+      "path": "skills/remote-machine/references/process-control.md",
+      "bytes": 2094,
+      "sha256": "caa02336f8cbd299c1b74663fccb8b0e7ce6de916a48efaf67844958f8e32c13"
+    },
+    {
+      "path": "skills/remote-machine/references/safety.md",
+      "bytes": 2073,
+      "sha256": "33009a8183a86198c78c11fc16bcef649eb1763859f3f0bf044e16d633b05891"
+    },
+    {
+      "path": "state.md",
+      "bytes": 1759,
+      "sha256": "96106592ec6d59006bfc37c4e4d9997fb1c55d33edb46bae95678451a62e4a07"
+    },
+    {
+      "path": "tests/audit.test.mjs",
+      "bytes": 1402,
+      "sha256": "0af283d98f7d294a144e83b8032e2dcc0df585ec91e5fadc03913f88928d225d"
+    },
+    {
+      "path": "tests/codex-bridge.test.mjs",
+      "bytes": 1316,
+      "sha256": "789ac2214a9fa7392d4cced3008213e3cc4400dc65fcb35fcade8c8b7eff4e66"
+    },
+    {
+      "path": "tests/codex-delivery.test.mjs",
+      "bytes": 7790,
+      "sha256": "8ba7c9f9036c6821e012b9270f81a63e56f1428d8c3e2bc17e0ec378429eb233"
+    },
+    {
+      "path": "tests/configure-portability.test.mjs",
+      "bytes": 12415,
+      "sha256": "aefa11d8b2e3bef52e9f74fb8d023ee4e0d0d40d3c001813ee72a13bf0f41ff6"
+    },
+    {
+      "path": "tests/fixtures/bridge-fixture.mjs",
+      "bytes": 4602,
+      "sha256": "1cb5aa47bc79e8ea014af340bd9552cb55db0b9399ac6ea429af7558fa7f8549"
+    },
+    {
+      "path": "tests/fixtures/mcp-fixture.mjs",
+      "bytes": 3831,
+      "sha256": "b3f2442d974f0e567bfd0f69f830d08173fb2a7eac718404d40d6d3829f662f3"
+    },
+    {
+      "path": "tests/local-mcp-bridge.test.mjs",
+      "bytes": 13669,
+      "sha256": "0b5d946b72d25479352e8c2a01f14f3f1fe833edf23b80e6c7edb719d894f92e"
+    },
+    {
+      "path": "tests/local-mcp-lifecycle.test.mjs",
+      "bytes": 5928,
+      "sha256": "15a580fda9c5198b466efd5a08f900b0f884562e3124d76e8d6c367ecc277bb9"
+    },
+    {
+      "path": "tests/mcp-client.test.mjs",
+      "bytes": 15190,
+      "sha256": "016e048b5de5fe77e9f33828d780d45411334dc9205f47bcaa25d6f2b5d1bb02"
+    },
+    {
+      "path": "tests/mcp-operation-store.test.mjs",
+      "bytes": 14076,
+      "sha256": "d384d6ffb4b9fbf82c5bc01e96d2733e713659dbd95149411282c9e5f2d28fca"
+    },
+    {
+      "path": "tests/mcp-registry.test.mjs",
+      "bytes": 12357,
+      "sha256": "cc0cd537fbc4d038b0f43f7935fe34e791a6634bd42a910e9288188370df6f2f"
+    },
+    {
+      "path": "tests/mcp-smoke.test.mjs",
+      "bytes": 2470,
+      "sha256": "cd55583421ba6bb665a07d63fad0539b493b799863a340a5ecffe0c4d1e9baf9"
+    },
+    {
+      "path": "tests/output-buffer.test.mjs",
+      "bytes": 2203,
+      "sha256": "188538f48a9d454b1fe27ac80cf074df4b58463b3ebe66cf5d7fca4edf1179ef"
+    },
+    {
+      "path": "tests/path-policy.test.mjs",
+      "bytes": 1767,
+      "sha256": "569b4d0ba0ad0294ad95fe625ebd778d23b9bfee82fede10267f3184affe5130"
+    },
+    {
+      "path": "tests/process-manager.test.mjs",
+      "bytes": 2254,
+      "sha256": "78ec4856946d32cd1d92fb10ccb5f9bdab83f09ab397a44331b4545a08c46533"
+    },
+    {
+      "path": "tests/process-regressions.test.mjs",
+      "bytes": 7245,
+      "sha256": "06e0fff19e5af5bc8e6a31c50f215be4387c98a96c3f6f4149178e9a4882272a"
+    },
+    {
+      "path": "tests/publication.test.mjs",
+      "bytes": 2804,
+      "sha256": "152c8d6fbcb72921bbe854bc734fa7713c50bbc61c0908749af8292c27d1ae18"
+    },
+    {
+      "path": "tests/wsl-control.test.mjs",
+      "bytes": 1934,
+      "sha256": "2f76d2adbb2ac92e2baa977144024c6501f5af9f6ff6273cbe0dfc6969a15a51"
+    }
+  ]
+}

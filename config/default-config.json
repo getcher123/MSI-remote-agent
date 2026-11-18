@@ -1,0 +1,72 @@
+{
+  "deviceId": "unconfigured-local-agent",
+  "wsl": {
+    "enabled": false
+  },
+  "allowedRoots": [],
+  "deniedPathFragments": [
+    "\\windows\\system32\\config",
+    "\\microsoft\\credentials",
+    "\\appdata\\roaming\\microsoft\\protect",
+    "/.ssh/",
+    "\\.ssh\\",
+    "/.aws/",
+    "\\.aws\\",
+    "/.gnupg/",
+    "\\.gnupg\\"
+  ],
+  "commandPolicy": {
+    "allowedExecutables": [
+      "git",
+      "git.exe",
+      "python3",
+      "python",
+      "python.exe",
+      "node",
+      "node.exe",
+      "npm",
+      "npm.cmd",
+      "npx",
+      "npx.cmd",
+      "bash",
+      "sh",
+      "rg",
+      "find",
+      "ls",
+      "cat",
+      "sha256sum",
+      "pytest",
+      "uv",
+      "pwsh",
+      "pwsh.exe",
+      "powershell.exe",
+      "cmd.exe",
+      "wsl.exe"
+    ],
+    "deniedPatterns": [
+      "rm\\s+-rf\\s+/(?:\\s|$)",
+      "\\bformat(?:\\.com)?\\b",
+      "\\bdiskpart\\b",
+      "\\breg(?:\\.exe)?\\s+delete\\b",
+      "\\bshutdown(?:\\.exe)?\\b",
+      "\\breboot\\b",
+      "\\bStop-Computer\\b",
+      "\\bRestart-Computer\\b",
+      "git\\s+push[^\\n]*--force",
+      "\\bInvoke-Expression\\b",
+      "(?:^|[;&|\\s])iex(?:[;&|\\s]|$)",
+      "curl[^\\n|]*\\|\\s*(?:bash|sh)",
+      "wget[^\\n|]*\\|\\s*(?:bash|sh)",
+      "(?:^|[;&|\\s])sudo(?:[;&|\\s]|$)"
+    ],
+    "maxOutputChars": 1000000
+  },
+  "codex": {
+    "enabled": false
+  },
+  "localMcp": {
+    "sources": [],
+    "maxResultBytes": 8388608,
+    "allowedHttpHosts": []
+  }
+}
