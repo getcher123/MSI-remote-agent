@@ -4,6 +4,9 @@ Changes are grouped by source version. A version in this file does not imply tha
 
 ## 0.3.0 — public source baseline
 
+- CMD launchers reset the child PowerShell module search path to avoid inherited PowerShell 7 modules breaking Windows PowerShell 5.1.
+- Uninstall preserves the installation when owned-process shutdown cannot be verified and reports removal failures.
+
 - Replace machine-specific defaults with portable first-run configuration.
 - Make WSL and Codex Connect optional for the core agent.
 - Add the portable `native` process runtime while retaining the legacy `windows` value.

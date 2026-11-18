@@ -50,8 +50,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 1350,
-      "sha256": "5e5f1baf8e7d5a8646ce0057a629b12cb29f85cfd2d15b4d47ebd92bb1c11230"
+      "bytes": 1602,
+      "sha256": "34f632c2fd3c5295d554b04fbb01c239d121336e52c6b21e89b5be9550f83eb3"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -125,8 +125,8 @@
     },
     {
       "path": "docs/TESTING.md",
-      "bytes": 4441,
-      "sha256": "9eae605030f6cc3bad798c3365ae5842c0083444331c6157124e337a803a45df"
+      "bytes": 4581,
+      "sha256": "f19c752fb2c92c47b2c40a2f662ea436fb74916a5b04d47eccd9560a67dc14f7"
     },
     {
       "path": "docs/THREAT_MODEL.md",
@@ -145,38 +145,38 @@
     },
     {
       "path": "launcher/AIHub-Remote-Agent-Configure-Tunnel.cmd",
-      "bytes": 124,
-      "sha256": "29a29d001e083bf350f1f49f61e2c34f90c5de28497b59380ba66276df67499f"
+      "bytes": 226,
+      "sha256": "17cfa8a3a6c5f20aae7d9c09c718e8d0c18be28142bf4604898a13f58f913c6f"
     },
     {
       "path": "launcher/AIHub-Remote-Agent-Install.cmd",
-      "bytes": 137,
-      "sha256": "cd61e421c29fe5511fd9b1fa3350a53b3bc7a2d965a9790b47827a89665f7ed5"
+      "bytes": 239,
+      "sha256": "d5619a77f15ed8eacf4f3c86c9dd18e3641ba79ac4b04dcf637bcefbc221ba61"
     },
     {
       "path": "launcher/AIHub-Remote-Agent-Rollback.cmd",
-      "bytes": 116,
-      "sha256": "a01e48a0746df620ffe0e807fc3bbdfee3b7ed24fc11c6480555edd634326d62"
+      "bytes": 218,
+      "sha256": "540767b70ac70fb8a48d775d2b1556586986368d107d3f9c1a9ced6268753e64"
     },
     {
       "path": "launcher/AIHub-Remote-Agent-Start.cmd",
-      "bytes": 113,
-      "sha256": "c4d7deca2d637352fe43deb01dd99c585416b57cc30881394b79b7c5ca7d39cc"
+      "bytes": 215,
+      "sha256": "afeda568530c08b24380f169a4996e1277e107c653900e806c7506baeac1334e"
     },
     {
       "path": "launcher/AIHub-Remote-Agent-Status.cmd",
-      "bytes": 114,
-      "sha256": "5619ff3cf3fdcfe8748b595fc6fdc2e2831f151502acc7117a3f44bf65d6dc7b"
+      "bytes": 216,
+      "sha256": "a6a607c369e7d93a09344ef97d7d8a5b5d28180a4c32ce0f714b71eda3b9ec13"
     },
     {
       "path": "launcher/AIHub-Remote-Agent-Stop.cmd",
-      "bytes": 112,
-      "sha256": "89dade2c1122fba8fbaf1602f38db1675d5561bbed5c8c6c707e51cf7d5307c1"
+      "bytes": 214,
+      "sha256": "591abeb55b897d46e981b4315ed9c1239f6e3af3aeb0d4815f9fc9beeff03fda"
     },
     {
       "path": "launcher/AIHub-Remote-Agent-Uninstall.cmd",
-      "bytes": 117,
-      "sha256": "91359cee6f1e6af30c62196507da28449af554d2d8fabc182a37a172ae1176c3"
+      "bytes": 219,
+      "sha256": "2a9200b284155dda693f2cfcdab2f71a1aea316106d04b8330a8989a48aeddad"
     },
     {
       "path": "launcher/Common.ps1",
@@ -225,8 +225,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 1201,
-      "sha256": "73e117e5110a550112e4cb1e03450eee9fb7410bd9676daf1ae80853a294057a"
+      "bytes": 1140,
+      "sha256": "090baa8e7d597e3a6897822712952150cf3a26271850500f119dbefc0e6693e4"
     },
     {
       "path": "plugin.json",
@@ -267,6 +267,11 @@
       "path": "scripts/local-mcp-cli.mjs",
       "bytes": 2247,
       "sha256": "c1ebef536a904f559d71d35a03ae4ca6d61bdac37596d7879958125efadb7b70"
+    },
+    {
+      "path": "scripts/run-installer-smoke.mjs",
+      "bytes": 884,
+      "sha256": "82528e67ac35350df29ad63c9fdd7d8f5fa35195e98a1e525cf46852e481950b"
     },
     {
       "path": "scripts/smoke-install.ps1",

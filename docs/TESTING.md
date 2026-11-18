@@ -31,7 +31,7 @@ node server/index.mjs --self-test
 
 ## Проверки целевой платформы
 
-Для Windows используйте `node scripts/smoke-windows.mjs`; `--wsl` добавляет WSL-проверки. `node scripts/smoke-mcp-wsl.mjs` проверяет синтетический MCP через WSL. Оба используют приватную WSL-конфигурацию либо явно заданную пару `--wsl-distro` / `--wsl-user`. `scripts/smoke-install.ps1` проверяет Windows-установщик. Изучите параметры и предусловия перед запуском. Отсутствие Windows или настроенного WSL означает «не выполнено», а не «пройдено».
+Для Windows используйте `node scripts/smoke-windows.mjs`; `--wsl` добавляет WSL-проверки. `node scripts/smoke-mcp-wsl.mjs` проверяет синтетический MCP через WSL. Оба используют приватную WSL-конфигурацию либо явно заданную пару `--wsl-distro` / `--wsl-user`. `npm run test:installer` запускает `scripts/smoke-install.ps1` в Windows PowerShell с отдельным окружением поиска модулей и проверяет Windows-установщик. Изучите параметры и предусловия перед запуском. Отсутствие Windows или настроенного WSL означает «не выполнено», а не «пройдено».
 
 `smoke-local-mcp.mjs` требует `--source` и `--server`; необязательны `--runtime native|windows|wsl`, повторяемый `--read-root`, `--tool` и `--arguments-json`. По умолчанию запрашивается только каталог. Скрипт предназначен для выбранного реального MCP и содержит ограниченный набор диагностических чтений. Даже catalog-only проверка может запустить его stdio-процесс. Запускайте такой smoke только для разрешённого приложения/стенда и не публикуйте сырой отчёт без очистки.
 
