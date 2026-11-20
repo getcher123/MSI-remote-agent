@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "aihub-remote-agent",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "files": [
     {
       "path": ".editorconfig",
@@ -50,8 +50,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 3376,
-      "sha256": "404329e7d275a24ba2ae387b2a9b312f4dd782ce75b705686ec25b3b2a8fcd50"
+      "bytes": 4404,
+      "sha256": "fcbc79106d8687df946c2397094bc6f91db66b54d02d29eca9e2d44989967c6b"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -65,8 +65,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 19723,
-      "sha256": "5ac20ebe30f5f9fa7ba76a7e1803c75d08f8ecb7807d0769fdfa18b6412bb3fc"
+      "bytes": 19867,
+      "sha256": "a4ce2e8f111e205426025b98aad53abc1f51b2a1d5f22a893ee78c5860b57710"
     },
     {
       "path": "ROADMAP.md",
@@ -100,8 +100,8 @@
     },
     {
       "path": "docs/CODEX_CONNECT_COMPATIBILITY.md",
-      "bytes": 14783,
-      "sha256": "057c6417f2aaabccc38959b94ccf1e37e672e2845e5cf37c511b4655a4250167"
+      "bytes": 17292,
+      "sha256": "9196c3af3c41776e4c389c08fef360bfa5ac80a0221f70a87d4d5e699c04d664"
     },
     {
       "path": "docs/INSTALLATION.md",
@@ -226,12 +226,12 @@
     {
       "path": "package.json",
       "bytes": 1140,
-      "sha256": "79a7c4108e13b58b4013e3a44f1a35aee7d5df039303f8c91f0650de55ba4f1c"
+      "sha256": "1d137b3e76ca03db1fe6c8d4fe08c4c15a0c9d656f28c6a708f21ef44e55db75"
     },
     {
       "path": "plugin.json",
       "bytes": 1358,
-      "sha256": "fe449b8d7e45e2999692c55f00b0b12570c4aa900630159116d94b90b770fbc0"
+      "sha256": "c5b6c30b53c481e0ec7bc5b9c43aee64bf45bbc30387fd6988480b00cd3c2d35"
     },
     {
       "path": "scripts/build-release-manifest.mjs",
@@ -315,8 +315,8 @@
     },
     {
       "path": "server/lib/codex-bridge.mjs",
-      "bytes": 31510,
-      "sha256": "df0a3989751b6120751572b121c63b3f870f3437a05932cfdf20dd186a0145ae"
+      "bytes": 35337,
+      "sha256": "a9d74e680f678c18e2ee52f98ea7502785e2ca783658dd293ed28f70960c2ca2"
     },
     {
       "path": "server/lib/config.mjs",
@@ -381,7 +381,7 @@
     {
       "path": "server/lib/util.mjs",
       "bytes": 4341,
-      "sha256": "5ed617891a011f70b79b46f7a855a6c7d5297c58227ba9156aa057738de5d99a"
+      "sha256": "5c62cb157e9552b5e357baeae6195bae1ce09cd1968d954b44e3d6a8d90016e5"
     },
     {
       "path": "server/lib/wsl-control.mjs",
@@ -415,8 +415,8 @@
     },
     {
       "path": "state.md",
-      "bytes": 4819,
-      "sha256": "92ccd3e9193b76b6f107ff7998ac008e9a92aa35f89bdee21e5ca4a9228e5a98"
+      "bytes": 5125,
+      "sha256": "1c1fdf44b7b6e37398f816de0ab265a90fa93c8263a30aae08af2034508758a3"
     },
     {
       "path": "tests/audit.test.mjs",
@@ -430,8 +430,8 @@
     },
     {
       "path": "tests/codex-delivery.test.mjs",
-      "bytes": 26353,
-      "sha256": "4ca0ebbf5b6183c37d6a54ca46e4b3f4985697e5433abc1be9b200c773f66509"
+      "bytes": 38201,
+      "sha256": "ccb24f40b658e6c9c3dab3f4a88abe1454bab14963f437ef128133811a5c5940"
     },
     {
       "path": "tests/configure-portability.test.mjs",

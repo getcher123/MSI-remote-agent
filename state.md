@@ -2,11 +2,15 @@
 
 ## Current source version
 
-The current source version is **0.3.1**, based on the portable 0.3.0 public baseline. WSL and Codex Connect remain optional; structured file/process tools and the direct local MCP bridge remain available.
+The current source version is **0.3.2**, based on the portable 0.3.0 public baseline. WSL and Codex Connect remain optional; structured file/process tools and the direct local MCP bridge remain available.
 
 This file describes repository development. It is not an inventory of installed machines and is not proof that a production deployment has been upgraded.
 
 ## Delivery and control changes
+
+- Valid legacy owner decisions and completed UI line-feed observations permit new distinct work while retaining the old receipt and outcome. `legacy_receipt_compatibility` identifies that narrower historical evidence; it is not a new strict delivery confirmation.
+- Prior original/UI hashes are deduplicated by stable thread UUID even after a rename. A changed request binding receives a durable `not_sent_duplicate` result instead of an ambiguous alias.
+- Bounded symbolic UI diagnostic codes survive staging failures; raw exception/output content remains excluded.
 
 - A caller saves `operation_id` before the first Codex send. The agent persists the bound receipt before script validation and the first IPC preflight, so an early timeout can be reconciled by a known ID.
 - The same operation ID cannot dispatch twice or be rebound to a different exact target or message hash. Legacy receipt lookup and text/target deduplication remain supported.
@@ -17,13 +21,13 @@ This file describes repository development. It is not an inventory of installed 
 
 ## Verification checkpoint
 
-`node --test tests/codex-bridge.test.mjs tests/codex-delivery.test.mjs` passed **39 tests**, with **0 failures and 0 skips**, using synthetic adapters and receipts. These cases cover early preflight failure, response loss, repeated/concurrent IDs, lock ownership, storage failures and delivery correlation, including CRLF normalization without trimming or changing code/path text, an undated exact candidate alongside a dated match, and preservation of unknown pending evidence in status/discovery. The privacy check passed for 102 files; route and relative-link validation passed for 30 tools and 26 Markdown files. The unconfigured optional-disabled self-test passed for source version 0.3.1 and all 30 tools.
+For 0.3.2, `npm test` passed **150 tests** with **0 failures and 0 skips**. The focused Codex bridge/delivery suite passed **48 tests**. New synthetic cases cover valid and malformed legacy owner decisions, legacy line-feed evidence, duplicates after title/cwd changes, durable caller binding, preserved receipts, current preflight/lock checks and bounded UI diagnostic codes. Strict correlation of new user turns remains unchanged.
 
-Independent reviews covered durable delivery, IPC bounds and the companion UI sender; the stdio control-lane change received a separate review. Final full-suite and release-manifest checks are recorded with the published change. CI runs the package on Linux and Windows with Node 22 and 24.
+The privacy check passed for **102 files**. Agent routes and relative links passed for **30 tools** and **26 Markdown files**. The optional-disabled self-test reported version **0.3.2** and all 30 tools. Final manifest validation and published CI are recorded with the pull request; Linux and Windows CI use Node 22 and 24.
 
-The companion Codex Connect checkout passed 50 Python tests in isolated WSL and a read-only live snapshot-13 check. Its Windows PowerShell parser check passed, but the local pure-function fixture launch from UNC was refused by the current execution policy; no bypass was used. Its separate Windows CI fixture performs no desktop interaction. These results do not validate this bridge's live desktop delivery, installer/upgrade, or tunnel acceptance. No update was installed on a target machine as part of this source work.
+A separately authorized target check of the preceding release confirmed normal NTFS installation under Windows RemoteSigned, script hashes, the installed self-test, healthy tunnel restart and live snapshot-13 reads. It exposed the two compatibility gaps addressed by this bridge update and the companion UI paragraph fix. That check does not establish end-to-end acceptance of this newer source. Raw operational receipts and machine-specific paths stay outside the repository.
 
-The reported external tunnel HTTP 409 was not reproduced in this environment. The stdio control-lane change addresses a confirmed local blocking path; it does not establish the cause or resolution of that external response.
+The external tunnel returned transient HTTP 409/timeout responses during reconnect before operational requests recovered. Its underlying cause is not established as fixed by this source change. Do not clear delivery receipts to repair a transport error.
 
 ## Entry points
 
