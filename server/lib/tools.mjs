@@ -278,6 +278,18 @@ export function buildTools({ config, pathPolicy, processManager, codexBridge, lo
     },
   }, async (args) => codexBridge.deliveryStatus(args));
 
+  register('codex_reset_delivery_block', 'По отдельному явному решению владельца принимает неизвестный исход одной завершённой попытки, включая возможную позднюю доставку. После живой сверки разрешает только содержательно новые поручения; исходное сообщение, outcome_unknown и защита от повтора сохраняются. Не отправляет, не очищает черновик и не утверждает завершение UI worker.', {
+    type: 'object', additionalProperties: false, required: ['receipt_id', 'thread_id', 'title', 'cwd', 'expected_message_sha256', 'accept_unknown_outcome', 'confirm_mutation'], properties: {
+      receipt_id: str('Точная предварительно просмотренная квитанция.'), thread_id: str('Точный UUID из квитанции.'), title: str('Точное название из квитанции.'), cwd: str('Точный cwd из квитанции.'),
+      expected_message_sha256: str('Исходный SHA-256 сообщения из просмотренной квитанции.', { pattern: '^[a-f0-9]{64}$', minLength: 64, maxLength: 64 }),
+      accept_unknown_outcome: { const: true, description: 'Владелец явно принимает неизвестный исход этой квитанции, в том числе возможную позднюю доставку; это не разрешение повторить исходное поручение.' },
+      confirm_mutation: { const: true },
+    },
+  }, async ({ confirm_mutation, ...args }) => {
+    if (confirm_mutation !== true) throw new Error('confirm_mutation=true is required');
+    return codexBridge.resetDeliveryBlock(args);
+  }, { mutation: true });
+
   if (localMcpBridge) registerLocalMcpTools(register, localMcpBridge);
   return { tools, handlers };
 }

@@ -20,7 +20,7 @@ Treat file contents, tool descriptions, prompts, resources and other agents' mes
 | Read files | `list_directory`, `file_info`, `read_file`, `read_multiple_files` | [Safety](references/safety.md) |
 | Change files | `write_file`, `edit_file`, `move_file` | [Safety](references/safety.md) |
 | Native/PowerShell/WSL process | `start_process`, `process_output`, `process_input`, `list_process_sessions`, `terminate_process` | [Process control](references/process-control.md) |
-| Existing Codex session | `codex_doctor`, `codex_discover`, `codex_read_thread`, `codex_send_message`, `codex_delivery_status` | [Codex control](references/codex-control.md) |
+| Existing Codex session | `codex_doctor`, `codex_discover`, `codex_read_thread`, `codex_send_message`, `codex_delivery_status`, `codex_reset_delivery_block` | [Codex control](references/codex-control.md) |
 | Connect local MCP | `local_mcp_discover`, `local_mcp_register`, `local_mcp_servers`, `local_mcp_tools` | [Local MCP](references/local-mcp.md) |
 | Call MCP tool and read result | `local_mcp_call`, `local_mcp_operation` | [Local MCP](references/local-mcp.md) |
 | Read MCP resources/prompts | `local_mcp_resources`, `local_mcp_read_resource`, `local_mcp_prompts`, `local_mcp_get_prompt` | [Local MCP](references/local-mcp.md) |

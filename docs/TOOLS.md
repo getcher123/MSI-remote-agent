@@ -1,6 +1,6 @@
 # Каталог инструментов и маршруты
 
-Источник истины для параметров — живой `tools/list` и схемы в `server/lib/tools.mjs` / `server/lib/local-mcp-tools.mjs`. Каталог состоит из 30 инструментов. Отключённая интеграция может оставлять инструмент в каталоге и возвращать понятную ошибку настройки при вызове.
+Источник истины для параметров — живой `tools/list` и схемы в `server/lib/tools.mjs` / `server/lib/local-mcp-tools.mjs`. Каталог состоит из 31 инструмента. Отключённая интеграция может оставлять инструмент в каталоге и возвращать понятную ошибку настройки при вызове.
 
 | Группа | Инструменты | Маршрут |
 | --- | --- | --- |
@@ -8,7 +8,7 @@
 | Чтение файлов | `list_directory`, `file_info`, `read_file`, `read_multiple_files` | Начать с узкого каталога/файла внутри разрешённого корня |
 | Изменение файлов | `write_file`, `edit_file`, `move_file` | Проверить цель и SHA; передать `confirm_mutation=true`; сверить результат |
 | Процессы | `start_process`, `process_output`, `process_input`, `list_process_sessions`, `terminate_process` | Структурированный запуск → session ID → чтение offsets → проверенная остановка |
-| Codex Connect | `codex_doctor`, `codex_discover`, `codex_read_thread`, `codex_send_message`, `codex_delivery_status` | Диагностика → точный thread → чтение → сохранённый клиентом operation ID → однократная отправка → квитанция |
+| Codex Connect | `codex_doctor`, `codex_discover`, `codex_read_thread`, `codex_send_message`, `codex_delivery_status`, `codex_reset_delivery_block` | Диагностика → точный thread → чтение → сохранённый клиентом operation ID → однократная отправка → квитанция; отдельное решение владельца для неизвестного исхода |
 | Выбор локального MCP | `local_mcp_discover`, `local_mcp_register`, `local_mcp_servers`, `local_mcp_tools` | Источник → явная регистрация → реальные схемы |
 | MCP-вызовы | `local_mcp_call`, `local_mcp_operation` | Исходный operation ID → вызов → чтение состояния без повторной отправки |
 | MCP-ресурсы | `local_mcp_resources`, `local_mcp_read_resource` | Список → точный URI через тот же сервер |
@@ -21,7 +21,9 @@
 
 `codex_delivery_status` принимает `receipt_id` или `operation_id`; при двух ID проверяется их соответствие. По умолчанию во время занятого dispatch lock возвращается сохранённый этап без IPC. `refresh=false` всегда читает сохранённое состояние, `refresh=true` делает явную живую сверку неизвестной доставки без отправки. Доказанный `not_sent` возвращается из квитанции. `not_found`, отсутствие сообщения в текущем хвосте и пустой composer не дают разрешения повторить неизвестную отправку. Различайте `not_sent`, `unknown`, `delivered` и факт выполнения поручения; подробности — в [контракте Codex](CODEX_CONNECT_COMPATIBILITY.md).
 
-`write_file`, `edit_file`, `move_file`, `process_input`, `terminate_process`, `codex_send_message`, `local_mcp_register`, `local_mcp_call`, `local_mcp_disconnect` и `local_mcp_unregister` требуют `confirm_mutation=true`. `start_process` требует его при `intent=write`.
+`codex_reset_delivery_block` требует `receipt_id`, точные `thread_id`/`title`/`cwd`, `expected_message_sha256`, `accept_unknown_outcome=true` и `confirm_mutation=true`. Владелец отдельно принимает неизвестный исход этой современной квитанции, включая возможную позднюю доставку. Инструмент сверяет живую сессию и сохраняет решение без отправки: фаза остаётся `outcome_unknown`, исходный текст нельзя повторить. Это разрешение только для содержательно новых поручений, не гарантия готовности всего thread; остальные квитанции и обычные guards остаются в силе. Активный dispatcher, receipt lock, незавершённые фазы и сохранённый staged draft не сбрасываются. [Ограничения и идемпотентность](CODEX_CONNECT_COMPATIBILITY.md#явное-решение-владельца).
+
+`write_file`, `edit_file`, `move_file`, `process_input`, `terminate_process`, `codex_send_message`, `codex_reset_delivery_block`, `local_mcp_register`, `local_mcp_call`, `local_mcp_disconnect` и `local_mcp_unregister` требуют `confirm_mutation=true`. `start_process` требует его при `intent=write`.
 
 Все вызовы `local_mcp_call` требуют этого поля, даже если выбранный инструмент описан как читающий: мост не принимает аннотации стороннего MCP за доказательство отсутствия побочных эффектов. Авторизация определяется задачей пользователя; повторное подтверждение пользователя не нужно, когда оно уже дано и охватывает действие.
 

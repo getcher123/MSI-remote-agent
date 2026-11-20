@@ -2,11 +2,19 @@
 
 ## Current source version
 
-The current source version is **0.3.3**, based on the portable 0.3.0 public baseline. WSL and Codex Connect remain optional; structured file/process tools and the direct local MCP bridge remain available.
+The current source version is **0.3.4**, based on the portable 0.3.0 public baseline. WSL and Codex Connect remain optional; structured file/process tools and the direct local MCP bridge remain available.
 
 This file describes repository development. It is not an inventory of installed machines and is not proof that a production deployment has been upgraded.
 
 ## Delivery and control changes
+
+### Version 0.3.4 changes
+
+Version 0.3.4 adds a modern explicit owner-decision API for one terminal unknown receipt. It requires separate acceptance of possible late delivery, exact reviewed binding, a verified original message, fresh known idle/empty pending evidence and the existing lock. The decision does not change unknown into delivered/not-sent, assert UI-worker exit, clean a draft or submit anything. Every new distinct task retains normal current preflight and UI guards; original and CRLF/LF-equivalent text cannot replay. Legacy compatibility is unchanged.
+
+Delayed status reconciliation now merges its observation into the current receipt under lock, preserving an intervening immutable owner decision. Inner UI timeout, nullable submit evidence, bounded elapsed time and an allowlisted cause remain distinct from the outer WSL result. Synthetic owner-decision and timeout regressions cover the candidate; target UI acceptance and any real owner decision remain separate, explicitly authorized operations.
+
+### Released 0.3.3 behavior
 
 - Optional legacy hash fields may be absent or explicitly null without invalidating a historical owner decision. Non-null malformed values still fail closed; a completed legacy UI observation still requires its valid observed hash. No legacy receipt is rewritten and no modern-operation exception is added.
 - Valid legacy owner decisions and completed UI line-feed observations permit new distinct work while retaining the old receipt and outcome. `legacy_receipt_compatibility` identifies that narrower historical evidence; it is not a new strict delivery confirmation.
@@ -21,6 +29,12 @@ This file describes repository development. It is not an inventory of installed 
 - UI messages are bounded to 32768 UTF-8 bytes. The paired external adapter must support the documented discovery/read limits; see [Codex compatibility](docs/CODEX_CONNECT_COMPATIBILITY.md).
 
 ## Verification checkpoint
+
+The 0.3.4 source candidate passed **174/174 Linux tests**, including **72 focused delivery/owner-decision tests**. Route/link validation passed for **31 tools** and **26 Markdown files**; the privacy scan passed for **103 files**. Final release manifest/self-test, published CI and target Windows checks are recorded separately; a successful explicit-decision fixture is not a live owner acknowledgement.
+
+The same 0.3.4 code was checked with isolated state on the target Windows host, Node 24.11.0: **171 passed, 0 failed, 3 platform-specific skips** out of 174 tests. The paired Codex candidate passed **55/55 tests in WSL** and **39/39 PowerShell guard fixtures**. Its public probe navigated an existing allowed session without entering or submitting a message. Actual owner acknowledgement and delivery remain separate operations; no unknown receipt was changed by these checks.
+
+### Retained 0.3.3 checkpoint
 
 For 0.3.3, `npm test` passed **153 tests** with **0 failures and 0 skips**. Three additional regressions cover serialized null legacy aliases, distinct-message eligibility with original-text no-replay, and continued rejection of malformed or modern evidence. The prior cases cover legacy owner decisions, line-feed evidence, duplicates after title/cwd changes, durable caller binding, preserved receipts, current preflight/lock checks and bounded UI diagnostic codes. Strict correlation of new user turns remains unchanged.
 

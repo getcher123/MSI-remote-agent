@@ -55,10 +55,32 @@ function priorMessageHashes(receipt) {
   return [receipt.message_sha256, ...(isLegacyReceipt(receipt)
     ? [receipt.observed_message_sha256, receipt.message_with_lf_sha256].filter(validHash) : [])];
 }
+function modernOwnerResolution(receipt, { includeObserved = false } = {}) {
+  const resolution = receipt.owner_resolution;
+  const terminalUnknown = receipt.phase === 'outcome_unknown' && receipt.delivery_outcome === 'unknown'
+    && receipt.stage === 'awaiting_observation';
+  if (receipt.schema_version !== 2 || !OPERATION_ID.test(receipt.operation_id || '')
+      || (!terminalUnknown && !(includeObserved && OBSERVED.has(receipt.phase))) || receipt.ui_dispatch_started !== true
+      || typeof receipt.title !== 'string' || !receipt.title || typeof receipt.cwd !== 'string' || !receipt.cwd
+      || !Array.isArray(receipt.baseline_turn_ids) || !receipt.baseline_turn_ids.every(validIdentifier) || receipt.draft_retained === true
+      || !Number.isFinite(receipt.enqueue_started_at_ms) || receipt.enqueue_started_at_ms < 0
+      || resolution?.schema_version !== 1 || resolution.action !== 'allow_new_distinct_messages'
+      || resolution.decision !== 'accept_unknown_outcome_including_late_delivery'
+      || resolution.prior_phase !== 'outcome_unknown' || !validIdentifier(resolution.resolution_id)
+      || recordedTime(resolution.at) === null || recordedTime(resolution.at) < receipt.enqueue_started_at_ms
+      || !validHash(resolution.message_lf_sha256)) return false;
+  if (['receipt_id', 'operation_id', 'thread_id', 'title', 'cwd', 'message_sha256'].some(key => resolution.binding?.[key] !== receipt[key])) return false;
+  const evidence = resolution.reconciliation;
+  return evidence?.source === 'live_extension_snapshot' && evidence.history_coverage === 'bounded_live_tail'
+    && evidence.freshness === 'received_in_current_request' && evidence.runtime_status === 'idle'
+    && evidence.pending_state_known === true && evidence.pending_request_count === 0
+    && evidence.unconfirmed_submission_count === 0 && evidence.exact_turn_found === false
+    && Number.isFinite(evidence.received_at_ms) && evidence.received_at_ms >= 0;
+}
 function receiptView(receipt, operation_id, extra = {}) {
   const primary = receipt.operation_id || receipt.receipt_id;
   const compatibility = legacyCompatibility(receipt);
-  return { ...receipt, operation_id: operation_id || primary, ...(operation_id && operation_id !== primary ? { canonical_operation_id: primary } : {}), ...(compatibility ? { legacy_receipt_compatibility: compatibility } : {}), receipt_persisted: true, ...extra };
+  return { ...receipt, operation_id: operation_id || primary, ...(operation_id && operation_id !== primary ? { canonical_operation_id: primary } : {}), ...(compatibility ? { legacy_receipt_compatibility: compatibility } : {}), ...(modernOwnerResolution(receipt) ? { owner_resolution_status: 'unknown_accepted_for_distinct_messages', blocks_new_send: false, resolution_scope: 'this_receipt_only' } : {}), receipt_persisted: true, ...extra };
 }
 function threadEvidence(snapshot = {}) {
   const evidence = Object.fromEntries(['pending_state_known', 'pending_request_count', 'unconfirmed_submission_count', 'observation'].filter((key) => snapshot[key] !== undefined).map((key) => [key, snapshot[key]]));
@@ -266,13 +288,16 @@ export class CodexBridge {
       if (raced) { this.assertOperationBinding(raced, request); return receiptView(raced, operation_id, { deduplicated: true }); }
       // UUID is stable across title/cwd changes. A rename or known legacy UI
       // newline hash must not permit resubmitting an earlier message.
-      const duplicate = [...receipts].reverse().find((r) => r.thread_id === thread_id && priorMessageHashes(r).includes(request.message_sha256) && !NOT_SENT.has(r.phase));
+      const normalizedHash = sha256Text(message.replace(/\r\n/g, '\n'));
+      const duplicate = [...receipts].reverse().find((r) => r.thread_id === thread_id
+        && (priorMessageHashes(r).includes(request.message_sha256)
+          || (modernOwnerResolution(r, { includeObserved: true }) && r.owner_resolution.message_lf_sha256 === normalizedHash)) && !NOT_SENT.has(r.phase));
       if (duplicate && !isLegacyReceipt(duplicate) && duplicate.title === title && duplicate.cwd === cwd && duplicate.message_sha256 === request.message_sha256) {
         // Keep legacy hash dedup and make a caller's new ID recoverable too.
         if (callerId) { duplicate.operation_aliases = [...new Set([...(duplicate.operation_aliases || []), operation_id])]; await this.saveReceipt(duplicate); }
         return receiptView(duplicate, callerId ? operation_id : undefined, { deduplicated: true, retry_safe: false });
       }
-      const pending = receipts.find((r) => r.thread_id === thread_id && (UNKNOWN.has(r.phase) || (!NOT_SENT.has(r.phase) && !OBSERVED.has(r.phase))) && !legacyCompatibility(r));
+      const pending = receipts.find((r) => r.thread_id === thread_id && (UNKNOWN.has(r.phase) || (!NOT_SENT.has(r.phase) && !OBSERVED.has(r.phase))) && !legacyCompatibility(r) && !modernOwnerResolution(r));
       const receipt = {
         schema_version: 2, receipt_id: receiptId, ...request, at: nowIso(), updated_at: nowIso(),
         phase: 'prepared', stage: 'prepared', last_completed_stage: 'prepared', delivery_outcome: 'pending',
@@ -340,8 +365,13 @@ export class CodexBridge {
           for (const key of ['error_code', 'reason']) {
             if (typeof parsed[key] === 'string' && /^[A-Z][A-Z0-9_]{0,127}$/.test(parsed[key])) receipt.ui_result[key] = parsed[key];
           }
-          if (typeof parsed.submit_attempted === 'boolean') receipt.ui_result.submit_attempted = parsed.submit_attempted;
-          if (!ui.timed_out && parsed.outcome === 'not_sent' && parsed.submit_attempted === false && ['failed_before_send', 'staged_not_submitted'].includes(parsed.phase)) {
+          if (typeof parsed.submit_attempted === 'boolean' || parsed.submit_attempted === null) receipt.ui_result.submit_attempted = parsed.submit_attempted;
+          // These are bounded helper metadata, not raw exception/output text.
+          // An inner PowerShell timeout is independent of the outer WSL timeout.
+          if (typeof parsed.inner_ui_timed_out === 'boolean') receipt.ui_result.inner_ui_timed_out = parsed.inner_ui_timed_out;
+          if (Number.isFinite(parsed.ui_elapsed_ms) && parsed.ui_elapsed_ms >= 0 && parsed.ui_elapsed_ms <= 600000) receipt.ui_result.ui_elapsed_ms = parsed.ui_elapsed_ms;
+          if (['TimeoutExpired', 'OSError'].includes(parsed.cause)) receipt.ui_result.cause = parsed.cause;
+          if (!ui.timed_out && parsed.inner_ui_timed_out !== true && parsed.outcome === 'not_sent' && parsed.submit_attempted === false && ['failed_before_send', 'staged_not_submitted'].includes(parsed.phase)) {
             Object.assign(receipt, { phase: parsed.phase === 'staged_not_submitted' ? 'not_sent_ui_staged' : 'not_sent_ui_preflight', delivery_outcome: 'not_sent', stage: 'completed', last_completed_stage: parsed.phase, draft_retained: parsed.phase === 'staged_not_submitted', retry_safe: parsed.phase !== 'staged_not_submitted' });
             return finish();
           }
@@ -372,6 +402,85 @@ export class CodexBridge {
       return finish();
     }, { operation_id }); }
     finally { if (this.activeOperations.get(operation_id) === active) this.activeOperations.delete(operation_id); }
+  }
+
+  async resetDeliveryBlock({ receipt_id, thread_id, title, cwd, expected_message_sha256, accept_unknown_outcome } = {}) {
+    this.assertEnabled();
+    if (accept_unknown_outcome !== true) throw failure('CODEX_OWNER_ACCEPTANCE_REQUIRED', 'An explicit owner decision accepting an unknown outcome, including possible late delivery, is required');
+    if (![receipt_id, thread_id, title, cwd].every(value => typeof value === 'string' && value.length) || !validHash(expected_message_sha256)) {
+      throw failure('CODEX_OWNER_RESOLUTION_INVALID', 'Exact receipt, target and reviewed message SHA256 are required');
+    }
+    const expected = { thread_id, title, cwd, message_sha256: expected_message_sha256 };
+    const findReviewed = receipts => {
+      const receipt = receipts.find(item => item.receipt_id === receipt_id);
+      if (!receipt) throw failure('CODEX_RECEIPT_NOT_FOUND', 'Unknown Codex receipt', { receipt_id });
+      this.assertOperationBinding(receipt, expected);
+      return receipt;
+    };
+    const view = (receipt, extra = {}) => receiptView(receipt, undefined, { reset_applied: false, retry_safe: false, readiness_verified_for_next_send: false, ...extra });
+    // A lost acknowledgement response can be recovered without reapplying the
+    // decision or claiming that the thread is still idle.
+    const saved = findReviewed(await this.loadReceipts());
+    if (modernOwnerResolution(saved)) return view(saved, { owner_decision_already_recorded: true });
+    if (OBSERVED.has(saved.phase)) return view(saved, { observed: true, owner_decision_required: false });
+    const assertInactive = () => {
+      if ([...this.activeOperations.values()].some(active => active.request.thread_id === thread_id)) {
+        throw failure('CODEX_DISPATCH_ACTIVE', 'A Codex dispatcher is still active for this thread');
+      }
+    };
+    assertInactive();
+    return this.withReceiptLock(async () => {
+      assertInactive();
+      const receipt = findReviewed(await this.loadReceipts());
+      if (modernOwnerResolution(receipt)) return view(receipt, { owner_decision_already_recorded: true });
+      if (OBSERVED.has(receipt.phase)) return view(receipt, { observed: true, owner_decision_required: false });
+      if (receipt.owner_resolution !== undefined) throw failure('CODEX_OWNER_RESOLUTION_CONFLICT', 'An incompatible owner decision already exists; it will not be overwritten');
+      if (receipt.schema_version !== 2 || !OPERATION_ID.test(receipt.operation_id || '')
+          || receipt.phase !== 'outcome_unknown' || receipt.delivery_outcome !== 'unknown'
+          || receipt.stage !== 'awaiting_observation' || receipt.ui_dispatch_started !== true
+          || !Number.isFinite(receipt.enqueue_started_at_ms) || receipt.enqueue_started_at_ms < 0
+          || !Array.isArray(receipt.baseline_turn_ids) || !receipt.baseline_turn_ids.every(validIdentifier)
+          || receipt.draft_retained === true) {
+        throw failure('CODEX_OWNER_RESOLUTION_NOT_ELIGIBLE', 'Only a terminal modern unknown delivery can receive this owner decision; pending sends and retained drafts remain blocked');
+      }
+      const messagePath = this.pathPolicy.toHostPath(`${this.messageDirWsl}/${receipt.receipt_id}-${receipt.message_sha256.slice(0, 12)}.txt`);
+      let message;
+      try {
+        message = await fs.readFile(messagePath, 'utf8');
+        if (sha256Text(message) !== receipt.message_sha256) throw Error();
+      } catch { throw failure('CODEX_MESSAGE_FILE_FAILED', 'The original bound message is unavailable or its SHA256 changed'); }
+      const snapshot = await this.readThread({ thread_id, limit: 20, max_chars: Math.min(200000, Math.max(16000, message.length + 2000)) });
+      this.assertThreadReady(snapshot, expected);
+      if (snapshot.source !== 'live_extension_snapshot' || snapshot.pending_state_known !== true
+          || snapshot.pending_request_count !== 0 || snapshot.unconfirmed_submission_count !== 0
+          || snapshot.observation?.freshness !== 'received_in_current_request'
+          || !Number.isFinite(snapshot.observation.received_at_ms) || snapshot.observation.received_at_ms < 0) {
+        throw failure('CODEX_OWNER_RECONCILIATION_UNAVAILABLE', 'Fresh live exact-target and explicitly known empty-pending evidence are required');
+      }
+      const observed = this.threadHasExactUserMessage(snapshot, message, receipt);
+      assertInactive();
+      if (observed) {
+        const confirmed = { ...receipt, phase: 'observed', delivery_outcome: 'delivered', stage: 'completed', last_completed_stage: 'delivery_observed', updated_at: nowIso(), observed_at: nowIso(), observed_turn_id: observed.turn_id, observed_message_id: observed.message_id, observed_turn_status: observed.turn_status };
+        await this.saveReceipt(confirmed);
+        return view(confirmed, { observed: true, owner_decision_required: false, live_read_available: true, ...currentThreadEvidence(snapshot) });
+      }
+      const at = nowIso();
+      const resolution = {
+        schema_version: 1, resolution_id: randomId('codexowner'), action: 'allow_new_distinct_messages',
+        decision: 'accept_unknown_outcome_including_late_delivery', at, prior_phase: receipt.phase,
+        binding: Object.fromEntries(['receipt_id', 'operation_id', 'thread_id', 'title', 'cwd', 'message_sha256'].map(key => [key, receipt[key]])),
+        message_lf_sha256: sha256Text(message.replace(/\r\n/g, '\n')),
+        reconciliation: {
+          source: 'live_extension_snapshot', history_coverage: 'bounded_live_tail', freshness: snapshot.observation.freshness,
+          received_at_ms: snapshot.observation.received_at_ms, runtime_status: 'idle', pending_state_known: true,
+          pending_request_count: 0, unconfirmed_submission_count: 0, exact_turn_found: false,
+        },
+      };
+      const updated = { ...receipt, owner_resolution: resolution, updated_at: at };
+      if (!modernOwnerResolution(updated)) throw failure('CODEX_OWNER_RESOLUTION_INVALID', 'Owner decision could not be bound to the original receipt');
+      await this.saveReceipt(updated);
+      return view(updated, { reset_applied: true, owner_decision_already_recorded: false, live_read_available: true, ...currentThreadEvidence(snapshot) });
+    }, { operation_id: saved.operation_id });
   }
 
   async deliveryStatus({ receipt_id, operation_id, refresh } = {}) {
@@ -414,11 +523,25 @@ export class CodexBridge {
       if (sha256Text(message) !== receipt.message_sha256) throw new Error('Delivery message file SHA mismatch');
       if (Array.isArray(receipt.baseline_turn_ids) && Number.isFinite(receipt.enqueue_started_at_ms)) observed = this.threadHasExactUserMessage(snapshot, message, receipt);
     }
-    const updated = { ...receipt };
-    if (observed) Object.assign(updated, { phase: 'observed', delivery_outcome: 'delivered', stage: 'completed', last_completed_stage: 'delivery_observed', updated_at: nowIso(), observed_at: receipt.observed_at || nowIso(), observed_turn_id: observed.turn_id, observed_message_id: observed.message_id, observed_turn_status: observed.turn_status });
+    let updated = { ...receipt };
+    const withObservation = current => ({ ...current, phase: 'observed', delivery_outcome: 'delivered', stage: 'completed', last_completed_stage: 'delivery_observed', updated_at: nowIso(), observed_at: current.observed_at || nowIso(), observed_turn_id: observed.turn_id, observed_message_id: observed.message_id, observed_turn_status: observed.turn_status });
+    if (observed) updated = withObservation(receipt);
     let persisted = !observed;
     if (observed) {
-      try { await this.withReceiptLock(() => this.saveReceipt(updated)); persisted = true; }
+      try {
+        await this.withReceiptLock(async () => {
+          // A read may have started before another reconciliation acquired the
+          // lock. Merge only the observation into the current bound receipt;
+          // never erase newer decisions or replace an existing confirmation.
+          const current = (await this.loadReceipts()).find(r => r.receipt_id === receipt.receipt_id);
+          if (!current) throw failure('CODEX_RECEIPT_NOT_FOUND', 'Codex receipt disappeared during reconciliation');
+          this.assertOperationBinding(current, receipt);
+          if (NOT_SENT.has(current.phase)) throw failure('CODEX_OPERATION_CONFLICT', 'Codex receipt became a terminal non-send during reconciliation');
+          updated = OBSERVED.has(current.phase) ? current : withObservation(current);
+          if (!OBSERVED.has(current.phase)) await this.saveReceipt(updated);
+        });
+        persisted = true;
+      }
       catch { persisted = false; }
     }
     return receiptView(updated, operation_id, { observed: Boolean(observed) || OBSERVED.has(receipt.phase), observed_in_current_tail: Boolean(observed), receipt_persisted: persisted, live_read_available: true, current_thread_status: snapshot.runtime_status?.type || 'unknown', ...currentThreadEvidence(snapshot), retry_safe: false });

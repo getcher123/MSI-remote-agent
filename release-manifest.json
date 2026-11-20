@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "aihub-remote-agent",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "files": [
     {
       "path": ".editorconfig",
@@ -50,8 +50,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 4829,
-      "sha256": "656d860f5950ad7501db6cb7b3e2378e07d75f148ed1855b1df4661edebaf9cb"
+      "bytes": 5827,
+      "sha256": "e6f24b324a2e95757db3c63f69ef376467d584ad0a5383bd99d573ec601f9e3c"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -65,8 +65,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 19867,
-      "sha256": "28fe506ce5c60aaf7a63dff0f3885f5aabdfd04546b7816a79c8c9bdfd15e677"
+      "bytes": 20950,
+      "sha256": "131c53c81325ac9abc3d9763a07853827dc7f4d50320d5173e975ef9701574ae"
     },
     {
       "path": "ROADMAP.md",
@@ -90,8 +90,8 @@
     },
     {
       "path": "docs/AGENT_MIGRATION_RU.md",
-      "bytes": 3990,
-      "sha256": "2615fde4a5416810d5a91fe3c9d068307c4f0a26b354df016c5078d411664508"
+      "bytes": 3986,
+      "sha256": "76bdddecc1d96a48822410af379c0f37e53ae03b397aa37e672efaba2421c151"
     },
     {
       "path": "docs/ARCHITECTURE.md",
@@ -100,8 +100,8 @@
     },
     {
       "path": "docs/CODEX_CONNECT_COMPATIBILITY.md",
-      "bytes": 17926,
-      "sha256": "693692bbfffece0398e5fc5ef97fa5f0578ee472b5a1e30c71fd268c0c514ddd"
+      "bytes": 24231,
+      "sha256": "3a09f303c069807cd30216daf8ea4803a6d695d4e995c889f39844d70b6becd7"
     },
     {
       "path": "docs/INSTALLATION.md",
@@ -135,8 +135,8 @@
     },
     {
       "path": "docs/TOOLS.md",
-      "bytes": 6363,
-      "sha256": "24248b607801eb6ca2730004e8b59ddecd585061ae7bcbc2e04e646c39280a65"
+      "bytes": 7685,
+      "sha256": "1b60de194f8d0f8a0b2adc9c3ab3162c85afd03f3a23eca465383d92f3af3f78"
     },
     {
       "path": "docs/UPGRADE_RU.md",
@@ -226,12 +226,12 @@
     {
       "path": "package.json",
       "bytes": 1140,
-      "sha256": "d3310165fc88a8af41941f0d715a785f7b17e6349ce7b690cb991ca4d66025dc"
+      "sha256": "07cf024c8ec931971283845e77dd809f43102cd0396e5793c43f86aa6f598120"
     },
     {
       "path": "plugin.json",
       "bytes": 1358,
-      "sha256": "f5b2231ce69959afe523641f4d9143a756535a40913431bcf930bb481e90800b"
+      "sha256": "d3d80f1e84c3473ec9da1a209a82a513f75b68ffd5de8e1be1bdf30d6f6fd7ca"
     },
     {
       "path": "scripts/build-release-manifest.mjs",
@@ -315,8 +315,8 @@
     },
     {
       "path": "server/lib/codex-bridge.mjs",
-      "bytes": 35519,
-      "sha256": "34d8e5e0904ee308c13faef71239166454a3334eb956f4333798536afe337d90"
+      "bytes": 45704,
+      "sha256": "32b6e9db901e4071c23394558a208388923fe41617c0bfa6c9c410714b189014"
     },
     {
       "path": "server/lib/config.mjs",
@@ -375,13 +375,13 @@
     },
     {
       "path": "server/lib/tools.mjs",
-      "bytes": 21207,
-      "sha256": "f00aa00460193db1e75dd98cc30832d6bef8b9840ee150122564d6e277a57343"
+      "bytes": 23142,
+      "sha256": "16f1eee1f7e3521fd5c8fca2fb117d9dfc939bfd3147a3fcf26c9bc2c62b4ed2"
     },
     {
       "path": "server/lib/util.mjs",
       "bytes": 4341,
-      "sha256": "53b9bfbb3b9e359e68aecbfd41e18a43111a9b7bc3c420dbccc5406d0c2b380b"
+      "sha256": "9bc84cf9182bf5e0a1d91bf2525ac4024dedd8c0e2a46a6a9aba8bad97420ae4"
     },
     {
       "path": "server/lib/wsl-control.mjs",
@@ -390,13 +390,13 @@
     },
     {
       "path": "skills/remote-machine/SKILL.md",
-      "bytes": 3464,
-      "sha256": "d7e1952a5c5db52cb784f79193d78b9e0ecc502f3541d2d5cac08bfe21c7c8ac"
+      "bytes": 3494,
+      "sha256": "c734ab39349484fda888d114448623b8373ef2ccb36ab82463c2617abbde3180"
     },
     {
       "path": "skills/remote-machine/references/codex-control.md",
-      "bytes": 4954,
-      "sha256": "183c5f5229eb84e6b7f8fef592b23de5f701c64f271ed1700c6ec7f284675790"
+      "bytes": 6782,
+      "sha256": "f438a08c2c7f491eab8066134e10e1528dbbb799113c8f6edd3c33e71f8846d9"
     },
     {
       "path": "skills/remote-machine/references/local-mcp.md",
@@ -415,8 +415,8 @@
     },
     {
       "path": "state.md",
-      "bytes": 6165,
-      "sha256": "f1aa4b58a407b882c24e818a0016d70a0a162898380e97275412aaa1bd8fc237"
+      "bytes": 8130,
+      "sha256": "f1eab5a7c6cd9e4e51e08676ef2d449c6797f3958d0fa089243e46748bb17348"
     },
     {
       "path": "tests/audit.test.mjs",
@@ -430,8 +430,13 @@
     },
     {
       "path": "tests/codex-delivery.test.mjs",
-      "bytes": 38201,
-      "sha256": "ccb24f40b658e6c9c3dab3f4a88abe1454bab14963f437ef128133811a5c5940"
+      "bytes": 42400,
+      "sha256": "11476576303f03940387cc75cd0e0580c194dd27dd21e43f27f36c536d52c2ad"
+    },
+    {
+      "path": "tests/codex-owner-resolution.test.mjs",
+      "bytes": 16606,
+      "sha256": "a5a526d9bbd00d577b556f5c0af38575ae48963b67dafae04a079b669dc0b747"
     },
     {
       "path": "tests/configure-portability.test.mjs",
