@@ -263,18 +263,20 @@ export function buildTools({ config, pathPolicy, processManager, codexBridge, lo
     }, anyOf: [{ required: ['thread_id'] }, { required: ['title'] }],
   }, async (args) => codexBridge.readThread(args));
 
-  register('codex_send_message', 'Отправляет UTF-8 сообщение в точный idle Codex thread через проверенный UI sender и подтверждает exact user turn. Никогда не считает queued доставкой и не делает auto-resend.', {
+  register('codex_send_message', 'Отправляет UTF-8 сообщение в точный idle Codex thread. Передайте стабильный operation_id до первой попытки: статус доступен по нему после timeout, повтор ID не отправляет заново. queued не считается доставкой.', {
     type: 'object', additionalProperties: false, required: ['thread_id', 'title', 'cwd', 'message', 'confirm_mutation'], properties: {
-      thread_id: str('Точный thread UUID.'), title: str('Точный отображаемый title.'), cwd: str('Ожидаемый cwd.'), message: str('Полный UTF-8 текст.', { maxLength: 500000 }), wait_seconds: int('Ожидание наблюдения UI.', { minimum: 1, maximum: 60, default: 15 }), confirm_mutation: { const: true },
+      operation_id: str('Стабильный ID попытки, сохранённый клиентом до вызова; существующий ID не переисполняется.', { pattern: '^[A-Za-z0-9][A-Za-z0-9_-]{7,127}$', minLength: 8, maxLength: 128 }), thread_id: str('Точный thread UUID.'), title: str('Точный отображаемый title.'), cwd: str('Ожидаемый cwd.'), message: str('Полный текст, не более 32768 байтов UTF-8.', { maxLength: 32768 }), wait_seconds: int('Ожидание наблюдения UI.', { minimum: 1, maximum: 60, default: 15 }), confirm_mutation: { const: true },
     },
   }, async ({ confirm_mutation, ...args }) => {
     if (confirm_mutation !== true) throw new Error('confirm_mutation=true is required');
     return codexBridge.sendMessage(args);
   }, { mutation: true });
 
-  register('codex_delivery_status', 'Повторно проверяет ранее сохранённую квитанцию отправки без повторной отправки.', {
-    type: 'object', additionalProperties: false, required: ['receipt_id'], properties: { receipt_id: str('ID квитанции codex_send_message.') },
-  }, async ({ receipt_id }) => codexBridge.deliveryStatus({ receipt_id }));
+  register('codex_delivery_status', 'Читает квитанцию по receipt_id или исходному operation_id, без отправки. При занятом lock сразу возвращает сохранённый этап; refresh=true сверяет неизвестную доставку через IPC.', {
+    type: 'object', additionalProperties: false, anyOf: [{ required: ['receipt_id'] }, { required: ['operation_id'] }], properties: {
+      receipt_id: str('ID квитанции codex_send_message.'), operation_id: str('Исходный ID, известный клиенту до отправки.', { pattern: '^[A-Za-z0-9][A-Za-z0-9_-]{7,127}$', minLength: 8, maxLength: 128 }), refresh: bool('false: сохранённый статус; true: сверка неизвестной доставки даже при lock; доказанный not_sent всегда берётся из квитанции.'),
+    },
+  }, async (args) => codexBridge.deliveryStatus(args));
 
   if (localMcpBridge) registerLocalMcpTools(register, localMcpBridge);
   return { tools, handlers };

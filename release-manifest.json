@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "aihub-remote-agent",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "files": [
     {
       "path": ".editorconfig",
@@ -45,13 +45,13 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 5567,
-      "sha256": "bb4425dbfc85851cb3c9d01935d217716b345203261e25c761b3a132b6cbd191"
+      "bytes": 5763,
+      "sha256": "518f5e30cc9af4c8e1b380763253b8b5a364746e7ff804443b648e14232e2615"
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 1602,
-      "sha256": "34f632c2fd3c5295d554b04fbb01c239d121336e52c6b21e89b5be9550f83eb3"
+      "bytes": 3376,
+      "sha256": "404329e7d275a24ba2ae387b2a9b312f4dd782ce75b705686ec25b3b2a8fcd50"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -65,8 +65,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 16984,
-      "sha256": "db8a05ff1c078b12cce27dfb916b7dfc12dbfd43603b89829e51b2b236d594d4"
+      "bytes": 19723,
+      "sha256": "5ac20ebe30f5f9fa7ba76a7e1803c75d08f8ecb7807d0769fdfa18b6412bb3fc"
     },
     {
       "path": "ROADMAP.md",
@@ -95,13 +95,13 @@
     },
     {
       "path": "docs/ARCHITECTURE.md",
-      "bytes": 5468,
-      "sha256": "0261227c987264c864704b3c606879818c589c33586f8fd19f840a9afbb9ed00"
+      "bytes": 6913,
+      "sha256": "4a44d7a077a2212508a60ac5346db5fe4aa375d33639de799dac823bb36882fc"
     },
     {
       "path": "docs/CODEX_CONNECT_COMPATIBILITY.md",
-      "bytes": 6028,
-      "sha256": "390c01bb40dab4e6fbdd34ad76675275bd7f0af941f4b82c78f5bbaa01f9b49a"
+      "bytes": 14783,
+      "sha256": "057c6417f2aaabccc38959b94ccf1e37e672e2845e5cf37c511b4655a4250167"
     },
     {
       "path": "docs/INSTALLATION.md",
@@ -115,8 +115,8 @@
     },
     {
       "path": "docs/RUNBOOK.md",
-      "bytes": 5810,
-      "sha256": "cb162a34e0ea97c69a71701918947507a069b779bbe7926466d262a10c0be9e7"
+      "bytes": 6827,
+      "sha256": "e47bcff6b7eadca8802ba692ae2379efa35157eb346e1a07ab243a1d44828ea8"
     },
     {
       "path": "docs/SECURITY.md",
@@ -135,8 +135,8 @@
     },
     {
       "path": "docs/TOOLS.md",
-      "bytes": 4764,
-      "sha256": "75c5aa768672971dc833edfbac544676b08df6a95ea27df3691bbcd1afa8493c"
+      "bytes": 6363,
+      "sha256": "24248b607801eb6ca2730004e8b59ddecd585061ae7bcbc2e04e646c39280a65"
     },
     {
       "path": "docs/UPGRADE_RU.md",
@@ -226,12 +226,12 @@
     {
       "path": "package.json",
       "bytes": 1140,
-      "sha256": "090baa8e7d597e3a6897822712952150cf3a26271850500f119dbefc0e6693e4"
+      "sha256": "79a7c4108e13b58b4013e3a44f1a35aee7d5df039303f8c91f0650de55ba4f1c"
     },
     {
       "path": "plugin.json",
       "bytes": 1358,
-      "sha256": "ee0e709424c5e18b0756a64b01c0b761ff834bab195f65df802d9a4a6e767ca0"
+      "sha256": "fe449b8d7e45e2999692c55f00b0b12570c4aa900630159116d94b90b770fbc0"
     },
     {
       "path": "scripts/build-release-manifest.mjs",
@@ -315,8 +315,8 @@
     },
     {
       "path": "server/lib/codex-bridge.mjs",
-      "bytes": 14346,
-      "sha256": "77981eeb164ec91f552c4750347700fb26bd785c22f8242bb2d797bde8838e6d"
+      "bytes": 31510,
+      "sha256": "df0a3989751b6120751572b121c63b3f870f3437a05932cfdf20dd186a0145ae"
     },
     {
       "path": "server/lib/config.mjs",
@@ -355,8 +355,8 @@
     },
     {
       "path": "server/lib/mcp-server.mjs",
-      "bytes": 4851,
-      "sha256": "d13e69300eda86e420a7059d2aaf313df4b8f002d6db3473fc12371e359e97ec"
+      "bytes": 7378,
+      "sha256": "1c8aa248d4978b00f5de666d4a9b6fcf83a3c312a4e6d75872fc1e1e4225170f"
     },
     {
       "path": "server/lib/output-buffer.mjs",
@@ -375,13 +375,13 @@
     },
     {
       "path": "server/lib/tools.mjs",
-      "bytes": 20250,
-      "sha256": "35d0b557b57c5dcfc2b8efd338b6ced18c359fe3721e95abddc4385f66e4afda"
+      "bytes": 21207,
+      "sha256": "f00aa00460193db1e75dd98cc30832d6bef8b9840ee150122564d6e277a57343"
     },
     {
       "path": "server/lib/util.mjs",
       "bytes": 4341,
-      "sha256": "07b2d812168f8bf2a2660b2e02c9b43f43af2cf0a08c95d1e410570d93175426"
+      "sha256": "5ed617891a011f70b79b46f7a855a6c7d5297c58227ba9156aa057738de5d99a"
     },
     {
       "path": "server/lib/wsl-control.mjs",
@@ -390,13 +390,13 @@
     },
     {
       "path": "skills/remote-machine/SKILL.md",
-      "bytes": 3080,
-      "sha256": "0ccad992ef35edacd126ae06a5a9354f5f9c1b4d1c125bdb7ae1b87cd9a4cf84"
+      "bytes": 3464,
+      "sha256": "d7e1952a5c5db52cb784f79193d78b9e0ecc502f3541d2d5cac08bfe21c7c8ac"
     },
     {
       "path": "skills/remote-machine/references/codex-control.md",
-      "bytes": 2129,
-      "sha256": "6e4a7336807764da8d8d318aa8dd5b8864c2171d710e3b5d2bd574514da93aeb"
+      "bytes": 4954,
+      "sha256": "183c5f5229eb84e6b7f8fef592b23de5f701c64f271ed1700c6ec7f284675790"
     },
     {
       "path": "skills/remote-machine/references/local-mcp.md",
@@ -415,8 +415,8 @@
     },
     {
       "path": "state.md",
-      "bytes": 1759,
-      "sha256": "96106592ec6d59006bfc37c4e4d9997fb1c55d33edb46bae95678451a62e4a07"
+      "bytes": 4819,
+      "sha256": "92ccd3e9193b76b6f107ff7998ac008e9a92aa35f89bdee21e5ca4a9228e5a98"
     },
     {
       "path": "tests/audit.test.mjs",
@@ -425,13 +425,13 @@
     },
     {
       "path": "tests/codex-bridge.test.mjs",
-      "bytes": 1316,
-      "sha256": "789ac2214a9fa7392d4cced3008213e3cc4400dc65fcb35fcade8c8b7eff4e66"
+      "bytes": 3728,
+      "sha256": "4f936b0f57d2b40b5860877d881d4255649d1ca026a8dd79133b1319117ade09"
     },
     {
       "path": "tests/codex-delivery.test.mjs",
-      "bytes": 7790,
-      "sha256": "8ba7c9f9036c6821e012b9270f81a63e56f1428d8c3e2bc17e0ec378429eb233"
+      "bytes": 26353,
+      "sha256": "4ca0ebbf5b6183c37d6a54ca46e4b3f4985697e5433abc1be9b200c773f66509"
     },
     {
       "path": "tests/configure-portability.test.mjs",
@@ -475,8 +475,8 @@
     },
     {
       "path": "tests/mcp-smoke.test.mjs",
-      "bytes": 2470,
-      "sha256": "cd55583421ba6bb665a07d63fad0539b493b799863a340a5ecffe0c4d1e9baf9"
+      "bytes": 9428,
+      "sha256": "926797c9278b810d20e39ac498c72a77da82f0934940888aeacdf4f9d41bd311"
     },
     {
       "path": "tests/output-buffer.test.mjs",

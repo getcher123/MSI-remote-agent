@@ -2,27 +2,72 @@ import readline from 'node:readline';
 import { LEGACY_PROTOCOL_VERSION, SERVER_NAME, VERSION, randomId } from './util.mjs';
 import { NATIVE_MCP_REPLY } from './mcp-reply.mjs';
 
+// These handlers only inspect an already-created operation. Do not infer this
+// privilege from caller annotations or from a tool's general read-only label.
+const STATUS_TOOLS = new Set(['local_mcp_operation', 'codex_delivery_status']);
+
 export class McpServer {
-  constructor({ tools, handlers, audit }) {
+  constructor({ tools, handlers, audit, input = process.stdin, output = process.stdout }) {
     this.tools = tools;
     this.handlers = handlers;
     this.audit = audit;
+    this.input = input;
+    this.output = output;
     this.initialized = false;
   }
 
   async serveStdio() {
-    const rl = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
-    for await (const line of rl) {
-      if (!line.trim()) continue;
-      let message;
-      try {
-        message = JSON.parse(line);
-      } catch (error) {
-        this.writeError(null, -32700, 'Parse error', String(error));
-        continue;
+    const rl = readline.createInterface({ input: this.input, crlfDelay: Infinity });
+    const pending = new Set();
+    let toolTail = Promise.resolve();
+    let failure = null;
+    const fail = error => { failure ??= error; rl.close(); };
+    const track = promise => {
+      // Observe every rejection immediately; a failed output stream must not
+      // leave an unhandled rejection or silently keep dispatching queued tools.
+      const task = Promise.resolve(promise).catch(fail);
+      pending.add(task);
+      void task.then(() => pending.delete(task));
+      return task;
+    };
+    const schedule = message => {
+      if (Array.isArray(message)) {
+        for (const item of message) schedule(item);
+        return;
       }
-      await this.handle(message);
+      const run = () => {
+        if (failure) throw failure;
+        return this.handle(message);
+      };
+      const name = message?.params?.name;
+      const isStatus = STATUS_TOOLS.has(name) && this.handlers.get(name)?.mutation !== true;
+      const serialized = message?.method === 'tools/call' && !isStatus;
+      const task = track(serialized ? toolTail.then(run) : Promise.resolve().then(run));
+      if (serialized) toolTail = task;
+    };
+    this.output.on('error', fail);
+    try {
+      for await (const line of rl) {
+        if (failure) break;
+        if (!line.trim()) continue;
+        let message;
+        try {
+          message = JSON.parse(line);
+        } catch (error) {
+          track(this.writeError(null, -32700, 'Parse error', String(error)));
+          continue;
+        }
+        // A slow tool must not block ping, handshake traffic, or receipt reads.
+        // Other tool handlers keep their original serial mutation ordering.
+        schedule(message);
+      }
+    } finally {
+      // EOF ends input, not an accepted operation. Its final response must be
+      // written before the owner closes its MCP children and exits.
+      await Promise.all([...pending]);
+      this.output.off('error', fail);
     }
+    if (failure) throw failure;
   }
 
   async handle(message) {
@@ -31,7 +76,7 @@ export class McpServer {
       return;
     }
     if (!message || message.jsonrpc !== '2.0') {
-      if (message?.id !== undefined) this.writeError(message.id, -32600, 'Invalid Request');
+      if (message?.id !== undefined) return this.writeError(message.id, -32600, 'Invalid Request');
       return;
     }
     if (message.id === undefined) {
@@ -86,21 +131,38 @@ export class McpServer {
       });
     } catch (error) {
       await this.audit.record({ tool: name, args, status: 'error', durationMs: Date.now() - started, mutation: entry.mutation, error });
+      const result = { call_id: callId, error: String(error?.message || error), ...safeErrorMetadata(error) };
       return this.writeResult(id, {
-        content: [{ type: 'text', text: JSON.stringify({ call_id: callId, error: String(error?.message || error) }, null, 2) }],
-        structuredContent: { call_id: callId, error: String(error?.message || error) },
+        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+        structuredContent: result,
         isError: true,
       });
     }
   }
 
   writeResult(id, result) {
-    process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', id, result })}\n`);
+    return this.writeMessage({ jsonrpc: '2.0', id, result });
   }
 
   writeError(id, code, message, data) {
-    process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', id, error: { code, message, ...(data ? { data } : {}) } })}\n`);
+    return this.writeMessage({ jsonrpc: '2.0', id, error: { code, message, ...(data ? { data } : {}) } });
   }
+
+  writeMessage(message) {
+    const encoded = `${JSON.stringify(message)}\n`;
+    return new Promise((resolve, reject) => {
+      this.output.write(encoded, error => error ? reject(error) : resolve());
+    });
+  }
+}
+
+function safeErrorMetadata(error) {
+  const result = {};
+  if (typeof error?.code === 'string' && /^[A-Z][A-Z0-9_]{0,95}$/.test(error.code)) result.error_code = error.code;
+  for (const key of ['operation_id', 'receipt_id']) {
+    if (typeof error?.[key] === 'string' && /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(error[key])) result[key] = error[key];
+  }
+  return result;
 }
 
 function selectVersion(requested) {
