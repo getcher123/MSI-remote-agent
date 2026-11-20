@@ -415,8 +415,8 @@
     },
     {
       "path": "state.md",
-      "bytes": 5661,
-      "sha256": "24bb02f54d30624545eb47807d0f3730a983ef6bde28298f545bd0e339db42d6"
+      "bytes": 6165,
+      "sha256": "f1aa4b58a407b882c24e818a0016d70a0a162898380e97275412aaa1bd8fc237"
     },
     {
       "path": "tests/audit.test.mjs",
