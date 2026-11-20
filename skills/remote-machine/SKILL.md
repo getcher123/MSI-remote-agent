@@ -30,6 +30,8 @@ Prefer structured file tools for ordinary file work, Codex tools for existing th
 
 ## Verify the result
 
-Use the original file SHA, process session ID, MCP operation ID or Codex receipt ID when reconciling. Distinguish request accepted, running, response received, delivery observed and work completed. Never turn an unknown mutation outcome into an automatic retry.
+Save a unique operation ID before the first intended `local_mcp_call` or `codex_send_message` and pass it to the call. For Codex, also retain the returned receipt ID. Follow [Codex control](references/codex-control.md) for cached status and explicit live reconciliation; do not wait for a lost send response to obtain a recovery key.
+
+Use the original file SHA, process session ID, MCP operation ID or Codex operation/receipt ID when reconciling. Distinguish request accepted, running, response received, delivery observed and work completed. Never turn an unknown mutation outcome into an automatic retry or assign a new ID merely to replay it.
 
 Report what was checked, the observed result and the remaining limit. A healthy device or successful catalog read does not prove every installed application or UI integration works.

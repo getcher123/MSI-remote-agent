@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-export const VERSION = '0.3.0';
+export const VERSION = '0.3.1';
 export const SERVER_NAME = 'aihub-remote-agent';
 export const LEGACY_PROTOCOL_VERSION = '2025-11-25';
 

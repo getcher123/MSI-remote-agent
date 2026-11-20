@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aihub-remote-agent",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Local Windows/WSL agent for files, processes, Codex Connect and explicitly registered MCP servers.",
   "author": {
     "name": "AIHub Works"
