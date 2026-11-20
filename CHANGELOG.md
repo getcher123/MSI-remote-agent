@@ -2,6 +2,11 @@
 
 Changes are grouped by source version. A version in this file does not imply that a machine has been upgraded or that a release archive has been published.
 
+## 0.3.3 — nullable legacy receipt hashes
+
+- Treat an absent or explicitly null optional legacy hash as an unknown alias. Preserve a valid historical owner decision for distinct messages while retaining the original-message replay barrier and all modern-operation guards.
+- Continue rejecting malformed non-null hashes. A legacy UI observation still requires its own valid observed hash; null is not evidence of delivery.
+
 ## 0.3.2 — legacy receipt compatibility
 
 - Preserve valid decisions already recorded by an older installation to allow new, distinct messages after an unknown outcome. Keep the original receipt and its unknown phase; do not create a new reset or replay permission.
