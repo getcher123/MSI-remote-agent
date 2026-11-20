@@ -2,6 +2,14 @@
 
 Changes are grouped by source version. A version in this file does not imply that a machine has been upgraded or that a release archive has been published.
 
+## 0.3.2 — legacy receipt compatibility
+
+- Preserve valid decisions already recorded by an older installation to allow new, distinct messages after an unknown outcome. Keep the original receipt and its unknown phase; do not create a new reset or replay permission.
+- Recognize complete legacy UI line-feed observation metadata for distinct-message eligibility, without presenting it as a new strict exact-text delivery confirmation.
+- Deduplicate previous text by stable thread UUID and known legacy message hashes even after a title or working-directory change. A new caller binding receives a durable `not_sent_duplicate` receipt when it cannot safely alias the older binding.
+- Retain bounded symbolic UI `reason` and `error_code` values so a staging refusal can be diagnosed without exposing raw subprocess output.
+- Keep modern operation binding, current idle/pending preflight, draft protection, stale-lock handling and exact post-send correlation unchanged. Malformed or incomplete legacy evidence continues to block.
+
 ## 0.3.1 — Codex delivery recovery
 
 - Accept a caller-saved `operation_id` before the first `codex_send_message` call and persist its receipt before script validation or the first IPC preflight. A preflight timeout now leaves a recoverable result.

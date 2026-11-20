@@ -8,7 +8,7 @@ import { isCodexEnabled, isWslEnabled } from './config.mjs';
 const execFileAsync = promisify(execFile);
 const UNKNOWN = new Set(['prepared', 'pending_send', 'ui_invoked_unobserved', 'pre_send_or_unknown_failure', 'outcome_unknown']);
 const OBSERVED = new Set(['observed', 'already_observed']);
-const NOT_SENT = new Set(['not_sent_preflight_failed', 'not_sent_preflight_changed', 'not_sent_blocked', 'not_sent_ui_preflight', 'not_sent_ui_staged']);
+const NOT_SENT = new Set(['not_sent_preflight_failed', 'not_sent_preflight_changed', 'not_sent_blocked', 'not_sent_duplicate', 'not_sent_ui_preflight', 'not_sent_ui_staged']);
 const OPERATION_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{7,127}$/;
 const SAFE_ERRORS = new Set(['CODEX_ADAPTER_TIMEOUT', 'CODEX_ADAPTER_OUTPUT_LIMIT', 'CODEX_ADAPTER_FAILED', 'CODEX_ADAPTER_INVALID_JSON', 'CODEX_SCRIPT_NOT_FOUND', 'CODEX_SCRIPT_SHA_MISMATCH', 'CODEX_THREAD_ID_MISMATCH', 'CODEX_THREAD_TITLE_MISMATCH', 'CODEX_THREAD_CWD_MISMATCH', 'CODEX_THREAD_NOT_IDLE', 'CODEX_PENDING_UNKNOWN', 'CODEX_PENDING_REQUESTS', 'CODEX_UNCONFIRMED_SUBMISSIONS', 'CODEX_THREAD_CHANGED', 'CODEX_UI_TIMEOUT', 'CODEX_UI_FAILED', 'CODEX_MESSAGE_FILE_FAILED', 'CODEX_RECEIPT_STORE_FAILED', 'CODEX_UNRESOLVED_DELIVERY']);
 
@@ -18,9 +18,45 @@ function checkOperationId(value) {
   return value;
 }
 function operationIds(receipt) { return [receipt.operation_id || receipt.receipt_id, ...(receipt.operation_aliases || [])]; }
+const validHash = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
+const validIdentifier = value => typeof value === 'string' && value.length > 0 && value.length <= 128 && !/[\s\0]/.test(value);
+function recordedTime(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return null;
+  const time = Date.parse(value);
+  return Number.isFinite(time) && new Date(time).toISOString() === value ? time : null;
+}
+function isLegacyReceipt(receipt) {
+  // Every receipt produced by the durable-operation implementation has an ID.
+  // Legacy evidence must never become a reset mechanism for newer operations.
+  return receipt.operation_id === undefined && (receipt.schema_version === undefined || receipt.schema_version === 1);
+}
+function legacyCompatibility(receipt) {
+  if (!isLegacyReceipt(receipt) || typeof receipt.title !== 'string' || !receipt.title || typeof receipt.cwd !== 'string' || !receipt.cwd
+      || !Number.isFinite(receipt.enqueue_started_at_ms) || receipt.enqueue_started_at_ms < 0
+      || !Array.isArray(receipt.baseline_turn_ids) || !receipt.baseline_turn_ids.every(validIdentifier)
+      || ['observed_message_sha256', 'message_with_lf_sha256'].some(key => receipt[key] !== undefined && !validHash(receipt[key]))) return null;
+  const resolution = receipt.owner_resolution;
+  if (receipt.phase === 'outcome_unknown' && resolution?.action === 'allow_new_distinct_messages'
+      && resolution.prior_phase === receipt.phase && resolution.history_coverage === 'saved_user_events'
+      && recordedTime(resolution.at) !== null && recordedTime(resolution.at) >= receipt.enqueue_started_at_ms) return 'owner_accepted_unknown';
+  // Preserve the older observation as older evidence. It is not a strict exact
+  // confirmation under the current text-correlation rules and is never rewritten.
+  if (receipt.phase === 'observed_with_ui_line_feed' && receipt.observation_source === 'live_tail'
+      && receipt.observed_turn_status === 'completed' && validIdentifier(receipt.observed_turn_id) && validIdentifier(receipt.observed_message_id)
+      && !receipt.baseline_turn_ids.includes(receipt.observed_turn_id)
+      && validHash(receipt.observed_message_sha256) && receipt.observed_message_sha256 !== receipt.message_sha256
+      && recordedTime(receipt.observed_at) !== null && recordedTime(receipt.observed_at) >= receipt.enqueue_started_at_ms) return 'ui_line_feed_observation';
+  return null;
+}
+function priorMessageHashes(receipt) {
+  // Known legacy UI hashes only widen the no-replay barrier, never confirmation.
+  return [receipt.message_sha256, ...(isLegacyReceipt(receipt)
+    ? [receipt.observed_message_sha256, receipt.message_with_lf_sha256].filter(validHash) : [])];
+}
 function receiptView(receipt, operation_id, extra = {}) {
   const primary = receipt.operation_id || receipt.receipt_id;
-  return { ...receipt, operation_id: operation_id || primary, ...(operation_id && operation_id !== primary ? { canonical_operation_id: primary } : {}), receipt_persisted: true, ...extra };
+  const compatibility = legacyCompatibility(receipt);
+  return { ...receipt, operation_id: operation_id || primary, ...(operation_id && operation_id !== primary ? { canonical_operation_id: primary } : {}), ...(compatibility ? { legacy_receipt_compatibility: compatibility } : {}), receipt_persisted: true, ...extra };
 }
 function threadEvidence(snapshot = {}) {
   const evidence = Object.fromEntries(['pending_state_known', 'pending_request_count', 'unconfirmed_submission_count', 'observation'].filter((key) => snapshot[key] !== undefined).map((key) => [key, snapshot[key]]));
@@ -226,13 +262,15 @@ export class CodexBridge {
       const receipts = await this.loadReceipts();
       const raced = this.findOperation(receipts, operation_id);
       if (raced) { this.assertOperationBinding(raced, request); return receiptView(raced, operation_id, { deduplicated: true }); }
-      const duplicate = [...receipts].reverse().find((r) => r.thread_id === thread_id && r.title === title && r.cwd === cwd && r.message_sha256 === request.message_sha256 && !NOT_SENT.has(r.phase));
-      if (duplicate) {
+      // UUID is stable across title/cwd changes. A rename or known legacy UI
+      // newline hash must not permit resubmitting an earlier message.
+      const duplicate = [...receipts].reverse().find((r) => r.thread_id === thread_id && priorMessageHashes(r).includes(request.message_sha256) && !NOT_SENT.has(r.phase));
+      if (duplicate && !isLegacyReceipt(duplicate) && duplicate.title === title && duplicate.cwd === cwd && duplicate.message_sha256 === request.message_sha256) {
         // Keep legacy hash dedup and make a caller's new ID recoverable too.
         if (callerId) { duplicate.operation_aliases = [...new Set([...(duplicate.operation_aliases || []), operation_id])]; await this.saveReceipt(duplicate); }
         return receiptView(duplicate, callerId ? operation_id : undefined, { deduplicated: true, retry_safe: false });
       }
-      const pending = receipts.find((r) => r.thread_id === thread_id && (UNKNOWN.has(r.phase) || (!NOT_SENT.has(r.phase) && !OBSERVED.has(r.phase))));
+      const pending = receipts.find((r) => r.thread_id === thread_id && (UNKNOWN.has(r.phase) || (!NOT_SENT.has(r.phase) && !OBSERVED.has(r.phase))) && !legacyCompatibility(r));
       const receipt = {
         schema_version: 2, receipt_id: receiptId, ...request, at: nowIso(), updated_at: nowIso(),
         phase: 'prepared', stage: 'prepared', last_completed_stage: 'prepared', delivery_outcome: 'pending',
@@ -253,6 +291,12 @@ export class CodexBridge {
       // Receipt exists even if script validation or the FIRST IPC read times out.
       try { await progress('prepared'); }
       catch { throw failure('CODEX_RECEIPT_STORE_FAILED', 'Codex receipt could not be persisted; UI was not invoked', { operation_id, receipt_id: receiptId, phase: 'not_sent_preflight_failed' }); }
+      if (duplicate) {
+        // Bind this caller ID to its actual request, rather than attaching it to
+        // an old receipt with a different title/cwd/hash and breaking recovery.
+        Object.assign(receipt, { phase: 'not_sent_duplicate', delivery_outcome: 'not_sent', stage: 'completed', deduplicated: true, deduplicated_by_receipt_id: duplicate.receipt_id, retry_safe: false });
+        return finish();
+      }
       if (pending) {
         Object.assign(receipt, { phase: 'not_sent_blocked', delivery_outcome: 'not_sent', stage: 'blocked', blocked_by_receipt_id: pending.receipt_id, error: { code: 'CODEX_UNRESOLVED_DELIVERY', layer: 'preflight', stage: 'prepared' } });
         return finish();
@@ -291,6 +335,9 @@ export class CodexBridge {
         try {
           const parsed = JSON.parse(ui.stdout.trim());
           receipt.ui_result = Object.fromEntries(['phase', 'turn_id', 'queue_item_id', 'outcome', 'last_confirmed_phase'].filter((k) => typeof parsed[k] === 'string' && parsed[k].length <= 128).map((k) => [k, parsed[k]]));
+          for (const key of ['error_code', 'reason']) {
+            if (typeof parsed[key] === 'string' && /^[A-Z][A-Z0-9_]{0,127}$/.test(parsed[key])) receipt.ui_result[key] = parsed[key];
+          }
           if (typeof parsed.submit_attempted === 'boolean') receipt.ui_result.submit_attempted = parsed.submit_attempted;
           if (!ui.timed_out && parsed.outcome === 'not_sent' && parsed.submit_attempted === false && ['failed_before_send', 'staged_not_submitted'].includes(parsed.phase)) {
             Object.assign(receipt, { phase: parsed.phase === 'staged_not_submitted' ? 'not_sent_ui_staged' : 'not_sent_ui_preflight', delivery_outcome: 'not_sent', stage: 'completed', last_completed_stage: parsed.phase, draft_retained: parsed.phase === 'staged_not_submitted', retry_safe: parsed.phase !== 'staged_not_submitted' });

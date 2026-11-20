@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { CodexBridge } from '../server/lib/codex-bridge.mjs';
+import { sha256Text } from '../server/lib/util.mjs';
 
 const identity = { thread_id: 'thread-exact', title: 'TEST', cwd: '/project' };
 function snapshot(turns = [], extra = {}) { return { ...identity, source: 'live_extension_snapshot', runtime_status: { type: 'idle' }, pending_request_methods: [], turns, ...extra }; }
@@ -121,6 +122,28 @@ test('existing delivery lock blocks send and is not deleted', async (t) => {
 test('UI raw output and stderr are not saved to receipts', async (t) => {
   const { b, request } = await fixture(t); b.runWsl = async () => ({ exit_code: 1, stdout: 'PRIVATE_UI_RAW', stderr: 'PRIVATE_ERROR_RAW' });
   await b.sendMessage(request); const data = await fs.readFile(b.receiptFile, 'utf8'); assert.doesNotMatch(data, /PRIVATE_/);
+});
+
+test('UI symbolic diagnostics survive a staged non-submit without storing free-form details', async (t) => {
+  const { b, request } = await fixture(t);
+  b.runWsl = async () => ({ exit_code: 1, stdout: JSON.stringify({ phase: 'staged_not_submitted', outcome: 'not_sent', submit_attempted: false,
+    error_code: 'CODEX_UI_DRAFT_VERIFICATION_FAILED', reason: 'COMPOSER_DRAFT_MISMATCH', detail: 'private source text' }), stderr: 'private process stderr' });
+  const r = await b.sendMessage({ ...request, operation_id: 'test_symbolic_ui_error' });
+  assert.equal(r.phase, 'not_sent_ui_staged'); assert.equal(r.draft_retained, true); assert.equal(r.retry_safe, false);
+  assert.equal(r.ui_result.error_code, 'CODEX_UI_DRAFT_VERIFICATION_FAILED'); assert.equal(r.ui_result.reason, 'COMPOSER_DRAFT_MISMATCH');
+  assert.doesNotMatch(await fs.readFile(b.receiptFile, 'utf8'), /private/);
+  const status = await b.deliveryStatus({ operation_id: 'test_symbolic_ui_error', refresh: false });
+  assert.deepEqual(status.ui_result, r.ui_result);
+});
+
+test('UI error_code and reason accept only bounded ASCII symbolic values', async (t) => {
+  const { b, request } = await fixture(t);
+  const invalid = ['private text with spaces', 'C:\\private\\path', 'CODE_WITH\nNEWLINE', 'СЕКРЕТ', 'A'.repeat(129), '', 123, { message: 'private' }, ['PRIVATE']];
+  for (const [index, value] of invalid.entries()) {
+    b.runWsl = async () => ({ exit_code: 1, stdout: JSON.stringify({ phase: 'failed_before_send', outcome: 'not_sent', submit_attempted: false, error_code: value, reason: value }), stderr: '' });
+    const r = await b.sendMessage({ ...request, operation_id: `test_invalid_symbolic_${index}` });
+    assert.equal(r.phase, 'not_sent_ui_preflight'); assert.equal(r.ui_result.error_code, undefined); assert.equal(r.ui_result.reason, undefined);
+  }
 });
 test('explicit discovery checks only requested IDs and reports partial failures', async (t) => {
   const { b } = await fixture(t); const seen = [];
@@ -324,4 +347,135 @@ test('malformed or conflicting persisted operation identities fail closed', asyn
     await assert.rejects(() => b.sendMessage({ ...request, operation_id: 'test_next_operation' }), { code: 'CODEX_RECEIPT_STORE_CORRUPT' });
     assert.equal(await fs.readFile(b.receiptFile, 'utf8'), data);
   }
+});
+
+const legacyText = 'Earlier synthetic instruction';
+function legacyReceipt(kind = 'owner') {
+  const receipt = {
+    receipt_id: `legacy_${kind}_receipt`, ...identity, title: 'Previous synthetic title',
+    phase: 'outcome_unknown', message_sha256: sha256Text(legacyText), message_length: legacyText.length,
+    baseline_turn_ids: ['earlier-synthetic-turn'], enqueue_started_at_ms: Date.parse('2025-01-02T03:04:00.000Z'),
+    retry_safe: false, observed_turn_id: null, observed_message_id: null,
+  };
+  if (kind === 'owner') return { ...receipt, message_with_lf_sha256: sha256Text(legacyText + '\n'), owner_resolution: {
+    action: 'allow_new_distinct_messages', at: '2025-01-02T03:05:00.000Z', prior_phase: 'outcome_unknown', history_coverage: 'saved_user_events',
+  } };
+  return { ...receipt, phase: 'observed_with_ui_line_feed', observed_turn_id: 'legacy-observed-turn', observed_message_id: 'legacy-observed-message',
+    observed_message_sha256: sha256Text(legacyText + '\n'), observed_at: '2025-01-02T03:05:00.000Z', observed_turn_status: 'completed', observation_source: 'live_tail' };
+}
+
+test('valid legacy owner decision and UI line-feed observation permit distinct work without rewriting history', async (t) => {
+  for (const [kind, compatibility] of [['owner', 'owner_accepted_unknown'], ['observed', 'ui_line_feed_observation']]) {
+    const { b, request } = await fixture(t); const legacy = legacyReceipt(kind);
+    await fs.writeFile(b.receiptFile, JSON.stringify([legacy]));
+    let sends = 0;
+    b.runWsl = async () => { sends++; return { exit_code: 0, stdout: '{}', stderr: '' }; };
+    b.readThread = async () => snapshot(sends ? [userTurn('new-distinct-turn', request.message)] : []);
+    const result = await b.sendMessage({ ...request, operation_id: `test_legacy_distinct_${kind}` });
+    assert.equal(result.phase, 'observed'); assert.equal(sends, 1);
+    assert.deepEqual((await b.loadReceipts()).find(r => r.receipt_id === legacy.receipt_id), legacy);
+    const historical = await b.deliveryStatus({ receipt_id: legacy.receipt_id, refresh: false });
+    assert.equal(historical.phase, legacy.phase); assert.equal(historical.legacy_receipt_compatibility, compatibility);
+    assert.equal(historical.observed, false); assert.equal(historical.retry_safe, false);
+  }
+});
+
+test('incomplete or contradictory legacy owner decisions keep the unresolved barrier', async (t) => {
+  const { b, request } = await fixture(t); const original = legacyReceipt();
+  const variants = [
+    { ...original, owner_resolution: undefined },
+    ...[{ action: 'retry' }, { at: 'not-a-date' }, { at: '2025-01-02 03:05:00 UTC' }, { at: '2025-02-30T03:05:00.000Z' }, { at: '2025-01-02T03:03:59.999Z' }, { prior_phase: 'pending_send' }, { history_coverage: undefined }, { history_coverage: 'short_tail' }]
+      .map(change => ({ ...original, owner_resolution: { ...original.owner_resolution, ...change } })),
+    { ...original, baseline_turn_ids: undefined }, { ...original, enqueue_started_at_ms: undefined },
+    { ...original, message_with_lf_sha256: 'invalid' }, { ...original, schema_version: 2 },
+    { ...original, operation_id: 'modern_unknown_operation' }, { ...original, phase: 'unknown_future_phase' },
+  ];
+  let calls = 0; b.verifyScripts = b.readThread = b.runWsl = async () => { calls++; throw Error('must not dispatch'); };
+  for (const [index, legacy] of variants.entries()) {
+    await fs.writeFile(b.receiptFile, JSON.stringify([legacy]));
+    const r = await b.sendMessage({ ...request, operation_id: `test_invalid_owner_${index}` });
+    assert.equal(r.phase, 'not_sent_blocked'); assert.equal(r.blocked_by_receipt_id, legacy.receipt_id); assert.equal(r.retry_safe, false);
+    assert.equal((await b.deliveryStatus({ receipt_id: legacy.receipt_id, refresh: false })).legacy_receipt_compatibility, undefined);
+  }
+  assert.equal(calls, 0);
+});
+
+test('incomplete legacy line-feed observations are not promoted to delivery evidence', async (t) => {
+  const { b, request } = await fixture(t); const original = legacyReceipt('observed');
+  const variants = [
+    ...['observed_turn_id', 'observed_message_id', 'observed_message_sha256', 'observed_at', 'observed_turn_status', 'observation_source', 'baseline_turn_ids'].map(key => ({ ...original, [key]: undefined })),
+    { ...original, observed_message_sha256: original.message_sha256 },
+    { ...original, observed_at: '2025-01-02T03:03:59.999Z' }, { ...original, observed_turn_status: 'unknown' },
+    { ...original, observation_source: 'short_tail_guess' }, { ...original, baseline_turn_ids: [original.observed_turn_id] },
+    { ...original, operation_id: 'modern_observed_operation' }, { ...original, schema_version: 2 },
+  ];
+  let sends = 0; b.runWsl = async () => { sends++; };
+  for (const [index, legacy] of variants.entries()) {
+    await fs.writeFile(b.receiptFile, JSON.stringify([legacy]));
+    const r = await b.sendMessage({ ...request, operation_id: `test_invalid_observation_${index}` });
+    assert.equal(r.phase, 'not_sent_blocked'); assert.equal(r.blocked_by_receipt_id, legacy.receipt_id);
+    const status = await b.deliveryStatus({ receipt_id: legacy.receipt_id, refresh: false });
+    assert.equal(status.observed, false); assert.equal(status.legacy_receipt_compatibility, undefined);
+  }
+  assert.equal(sends, 0);
+});
+
+test('legacy original and known LF hashes cannot replay after rename or cwd change and caller binding stays recoverable', async (t) => {
+  for (const kind of ['owner', 'observed']) for (const message of [legacyText, legacyText + '\n']) for (const changedBinding of [false, true]) {
+    const { b, request } = await fixture(t); const legacy = legacyReceipt(kind);
+    await fs.writeFile(b.receiptFile, JSON.stringify([legacy]));
+    b.verifyScripts = b.readThread = b.runWsl = async () => { throw Error('duplicate must not reach IPC/UI'); };
+    const duplicateRequest = { ...request, operation_id: 'test_legacy_duplicate', message,
+      title: changedBinding ? 'Renamed synthetic session' : legacy.title, cwd: changedBinding ? '/changed-project' : legacy.cwd };
+    const duplicate = await b.sendMessage(duplicateRequest);
+    assert.equal(duplicate.phase, 'not_sent_duplicate'); assert.equal(duplicate.delivery_outcome, 'not_sent'); assert.equal(duplicate.ui_dispatch_started, false);
+    assert.equal(duplicate.retry_safe, false); assert.equal(duplicate.deduplicated, true); assert.equal(duplicate.deduplicated_by_receipt_id, legacy.receipt_id);
+    assert.equal(duplicate.title, duplicateRequest.title); assert.equal(duplicate.cwd, duplicateRequest.cwd); assert.equal(duplicate.message_sha256, sha256Text(message));
+    const repeated = await b.sendMessage(duplicateRequest);
+    assert.equal(repeated.receipt_id, duplicate.receipt_id); assert.equal(repeated.phase, 'not_sent_duplicate');
+    assert.equal((await b.deliveryStatus({ operation_id: duplicateRequest.operation_id, refresh: true })).phase, 'not_sent_duplicate');
+    await assert.rejects(() => b.sendMessage({ ...duplicateRequest, message: 'A different binding' }), { code: 'CODEX_OPERATION_CONFLICT' });
+    const stored = await b.loadReceipts(); assert.equal(stored.length, 2); assert.deepEqual(stored[0], legacy);
+  }
+});
+
+test('modern receipt duplicate also uses stable UUID without rebinding its operation aliases', async (t) => {
+  const { b, request } = await fixture(t);
+  const first = await b.sendMessage({ ...request, operation_id: 'test_modern_original' });
+  const before = await b.loadReceipts();
+  b.verifyScripts = b.readThread = b.runWsl = async () => { throw Error('duplicate must not reach IPC/UI'); };
+  const renamedRequest = { ...request, title: 'Renamed', cwd: '/different-project', operation_id: 'test_modern_renamed' };
+  const duplicate = await b.sendMessage(renamedRequest);
+  assert.equal(duplicate.phase, 'not_sent_duplicate'); assert.equal(duplicate.deduplicated_by_receipt_id, first.receipt_id);
+  assert.equal((await b.sendMessage(renamedRequest)).receipt_id, duplicate.receipt_id);
+  assert.deepEqual((await b.loadReceipts())[0], before[0]);
+});
+
+test('legacy permission does not bypass current identity, idle, pending or lock checks', async (t) => {
+  const { b, request } = await fixture(t); const legacy = legacyReceipt();
+  await fs.writeFile(b.receiptFile, JSON.stringify([legacy]));
+  let sends = 0; b.runWsl = async () => { sends++; };
+  for (const [index, extra] of [
+    { thread_id: 'different-thread' }, { title: 'Wrong current title' }, { cwd: '/wrong-project' },
+    { runtime_status: { type: 'active' } }, { pending_state_known: false }, { pending_request_methods: ['approval'] },
+  ].entries()) {
+    b.readThread = async () => snapshot([], extra);
+    const r = await b.sendMessage({ ...request, operation_id: `test_legacy_preflight_${index}` });
+    assert.equal(r.phase, 'not_sent_preflight_failed'); assert.equal(r.ui_dispatch_started, false);
+  }
+  await fs.writeFile(`${b.receiptFile}.lock`, 'another owner');
+  await assert.rejects(() => b.sendMessage({ ...request, operation_id: 'test_legacy_foreign_lock' }), { code: 'CODEX_DELIVERY_LOCKED' });
+  assert.equal(await fs.readFile(`${b.receiptFile}.lock`, 'utf8'), 'another owner'); assert.equal(sends, 0);
+  assert.deepEqual((await b.loadReceipts())[0], legacy);
+});
+
+test('legacy line-feed compatibility does not relax strict correlation of new sends', async (t) => {
+  const { b, request } = await fixture(t); const legacy = legacyReceipt('observed');
+  await fs.writeFile(b.receiptFile, JSON.stringify([legacy]));
+  let sent = false;
+  b.runWsl = async () => { sent = true; return { exit_code: 0, stdout: '{}', stderr: '' }; };
+  b.readThread = async () => snapshot(sent ? [userTurn('different-new-turn', request.message + '\n')] : []);
+  const r = await b.sendMessage({ ...request, operation_id: 'test_legacy_strict_new' });
+  assert.equal(r.phase, 'outcome_unknown'); assert.equal(r.retry_safe, false);
+  assert.deepEqual((await b.loadReceipts())[0], legacy);
 });
