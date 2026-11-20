@@ -2,12 +2,13 @@
 
 ## Current source version
 
-The current source version is **0.3.2**, based on the portable 0.3.0 public baseline. WSL and Codex Connect remain optional; structured file/process tools and the direct local MCP bridge remain available.
+The current source version is **0.3.3**, based on the portable 0.3.0 public baseline. WSL and Codex Connect remain optional; structured file/process tools and the direct local MCP bridge remain available.
 
 This file describes repository development. It is not an inventory of installed machines and is not proof that a production deployment has been upgraded.
 
 ## Delivery and control changes
 
+- Optional legacy hash fields may be absent or explicitly null without invalidating a historical owner decision. Non-null malformed values still fail closed; a completed legacy UI observation still requires its valid observed hash. No legacy receipt is rewritten and no modern-operation exception is added.
 - Valid legacy owner decisions and completed UI line-feed observations permit new distinct work while retaining the old receipt and outcome. `legacy_receipt_compatibility` identifies that narrower historical evidence; it is not a new strict delivery confirmation.
 - Prior original/UI hashes are deduplicated by stable thread UUID even after a rename. A changed request binding receives a durable `not_sent_duplicate` result instead of an ambiguous alias.
 - Bounded symbolic UI diagnostic codes survive staging failures; raw exception/output content remains excluded.
@@ -21,11 +22,13 @@ This file describes repository development. It is not an inventory of installed 
 
 ## Verification checkpoint
 
-For 0.3.2, `npm test` passed **150 tests** with **0 failures and 0 skips**. The focused Codex bridge/delivery suite passed **48 tests**. New synthetic cases cover valid and malformed legacy owner decisions, legacy line-feed evidence, duplicates after title/cwd changes, durable caller binding, preserved receipts, current preflight/lock checks and bounded UI diagnostic codes. Strict correlation of new user turns remains unchanged.
+For 0.3.3, `npm test` passed **153 tests** with **0 failures and 0 skips**. Three additional regressions cover serialized null legacy aliases, distinct-message eligibility with original-text no-replay, and continued rejection of malformed or modern evidence. The prior cases cover legacy owner decisions, line-feed evidence, duplicates after title/cwd changes, durable caller binding, preserved receipts, current preflight/lock checks and bounded UI diagnostic codes. Strict correlation of new user turns remains unchanged.
 
-The privacy check passed for **102 files**. Agent routes and relative links passed for **30 tools** and **26 Markdown files**. The optional-disabled self-test reported version **0.3.2** and all 30 tools. Final manifest validation and published CI are recorded with the pull request; Linux and Windows CI use Node 22 and 24.
+The privacy check passed for **102 files**. Agent routes and relative links passed for **30 tools** and **26 Markdown files**. The optional-disabled self-test and final manifest validation are rerun after the version update and recorded with published CI; Linux and Windows CI use Node 22 and 24.
 
-A separately authorized target check of the preceding release confirmed normal NTFS installation under Windows RemoteSigned, script hashes, the installed self-test, healthy tunnel restart and live snapshot-13 reads. It exposed the two compatibility gaps addressed by this bridge update and the companion UI paragraph fix. That check does not establish end-to-end acceptance of this newer source. Raw operational receipts and machine-specific paths stay outside the repository.
+The same 0.3.3 candidate was also checked in an isolated configuration on Windows with Node 24.11.0: **150 passed, 0 failed, 3 platform-specific skips** out of 153 tests. The dedicated Windows output/EOF, truthful soft-stop, confirmed force-stop and owned-resource cleanup smoke all passed. An earlier CI attempt timed out after ten seconds in the Windows output/EOF smoke; that result is retained and the final CI rerun is recorded with the pull request. No test or timeout was weakened for the retry.
+
+A separately authorized target check confirmed normal NTFS installation under Windows RemoteSigned, script hashes, the installed self-test, healthy tunnel restart and live snapshot-13 reads. The following live check exposed the nullable legacy alias addressed here. It also observed the rich-text UI adding Markdown escaping to a submitted message: the visible agent acknowledged its content, while strict transport correlation correctly remained unconfirmed. This nullable fix does not change that correlation rule or establish complete end-to-end acceptance. Raw operational receipts and machine-specific paths stay outside the repository.
 
 The external tunnel returned transient HTTP 409/timeout responses during reconnect before operational requests recovered. Its underlying cause is not established as fixed by this source change. Do not clear delivery receipts to repair a transport error.
 

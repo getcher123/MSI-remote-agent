@@ -34,7 +34,9 @@ function legacyCompatibility(receipt) {
   if (!isLegacyReceipt(receipt) || typeof receipt.title !== 'string' || !receipt.title || typeof receipt.cwd !== 'string' || !receipt.cwd
       || !Number.isFinite(receipt.enqueue_started_at_ms) || receipt.enqueue_started_at_ms < 0
       || !Array.isArray(receipt.baseline_turn_ids) || !receipt.baseline_turn_ids.every(validIdentifier)
-      || ['observed_message_sha256', 'message_with_lf_sha256'].some(key => receipt[key] !== undefined && !validHash(receipt[key]))) return null;
+      // Legacy optional hashes may be absent or explicitly null. Neither adds
+      // a replay alias; a present non-null value must still be a valid hash.
+      || ['observed_message_sha256', 'message_with_lf_sha256'].some(key => receipt[key] !== undefined && receipt[key] !== null && !validHash(receipt[key]))) return null;
   const resolution = receipt.owner_resolution;
   if (receipt.phase === 'outcome_unknown' && resolution?.action === 'allow_new_distinct_messages'
       && resolution.prior_phase === receipt.phase && resolution.history_coverage === 'saved_user_events'
