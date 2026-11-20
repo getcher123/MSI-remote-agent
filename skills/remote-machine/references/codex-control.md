@@ -39,3 +39,13 @@ For `prepared`, `pending_send`, `ui_invoked_unobserved`, `outcome_unknown`, time
 For a proven `not_sent_preflight_failed`, `not_sent_preflight_changed` or `not_sent_ui_preflight`, check `retry_safe`, correct the cause and perform fresh exact-target checks before a new authorized attempt with a new ID. `not_sent_blocked` still requires reconciliation of the blocking receipt. `not_sent_ui_staged` retains a draft and is not retry-safe: inspect the draft rather than overwriting or submitting it automatically. Do not reinterpret an old matching turn as proof of a new delivery.
 
 Do not delete stale locks or receipts to force progress. First confirm the old dispatcher is no longer active and reconcile the actual history. UI sending also depends on the user's available desktop session and compatible client; a successful doctor is not proof of UI delivery.
+
+## Explicit owner decision for new distinct work
+
+`codex_reset_delivery_block` records a separate owner decision accepting one terminal modern `outcome_unknown`, including the possibility of late delivery and its ordering effects. It does not replay a send, clear a draft, assert that a Windows worker exited, or prove that the earlier message was absent. A general instruction to continue or repair the integration is not that specific decision; do not apply it automatically from a scheduled controller.
+
+Read the exact receipt first. Only after the owner's explicit acceptance pass its `receipt_id`, exact `thread_id`/`title`/`cwd`, original `expected_message_sha256`, `accept_unknown_outcome=true` and `confirm_mutation=true`. The server checks the original message hash, fresh exact idle/known-empty-pending evidence and its normal durable lock. Active known dispatchers, unfinished receipts and retained staged drafts are not reset. The new API is for schema-2 operations; historical legacy decisions remain compatible but are not created by this route.
+
+The saved decision keeps the unknown phase and original-message replay barrier. A strict newly observed full user turn can instead be reconciled as delivery without an acceptance record. `blocks_new_send=false` applies only to this receipt, not to all thread state. `retry_safe=false` and `readiness_verified_for_next_send=false` remain explicit. Every genuinely new task still passes ordinary current identity/idle/pending, Windows mutex and draft guards. Cosmetic changes do not turn a replay into new work.
+
+An identical repeated owner-decision call returns the same saved decision, without another write or a fresh readiness claim. If the response is lost, inspect the same receipt. Do not edit or delete the receipt or broaden its decision to other deliveries.

@@ -2,6 +2,12 @@
 
 Changes are grouped by source version. A version in this file does not imply that a machine has been upgraded or that a release archive has been published.
 
+## 0.3.4 — 2026-11-20 — explicit owner decisions and UI timeout diagnostics
+
+- Add `codex_reset_delivery_block` for a specific explicit owner decision accepting one terminal modern unknown outcome, including possible late delivery. Bind the decision to the reviewed receipt, exact target and original message hash; retain unknown and the original-message replay barrier. No UI send, draft cleanup, worker-exit claim or automatic recovery occurs in this tool.
+- Require fresh exact idle and explicitly known empty pending state under the existing durable lock. Reject active dispatchers, unfinished receipts, retained drafts and conflicting decisions. Keep historical legacy compatibility unchanged and preserve accepted decisions during concurrent status reconciliation.
+- Keep inner PowerShell timeout metadata separate from outer WSL timeout. Preserve nullable submit evidence, a bounded duration and allowlisted exception kind without logging raw output or changing unknown classification.
+
 ## 0.3.3 — nullable legacy receipt hashes
 
 - Treat an absent or explicitly null optional legacy hash as an unknown alias. Preserve a valid historical owner decision for distinct messages while retaining the original-message replay barrier and all modern-operation guards.

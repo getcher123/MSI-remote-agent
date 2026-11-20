@@ -3,9 +3,9 @@
 [![Tests](https://github.com/getcher123/MSI-remote-agent/actions/workflows/test.yml/badge.svg)](https://github.com/getcher123/MSI-remote-agent/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Локальный MCP-агент для работы AI-помощников с файлами, терминалом, Codex Connect и MCP-серверами приложений.** Агент запускается на вашем компьютере и предоставляет 30 инструментов через MCP `stdio`. Для удалённого подключения нужен отдельный поддерживаемый транспорт, например Secure MCP Tunnel.
+**Локальный MCP-агент для работы AI-помощников с файлами, терминалом, Codex Connect и MCP-серверами приложений.** Агент запускается на вашем компьютере и предоставляет 31 инструмент через MCP `stdio`. Для удалённого подключения нужен отдельный поддерживаемый транспорт, например Secure MCP Tunnel.
 
-Название репозитория — `MSI-remote-agent`; имя проекта и пакета — **AIHub Remote Agent**. Для работы не требуется компьютер определённой марки. Версия исходников **0.3.3** содержит универсальную настройку, восстановление статуса Codex-отправки по заранее известному ID и совместимость с ранее сохранёнными решениями владельца по старым квитанциям. Рабочая конфигурация в пакет не входит. Изменение исходников не означает обновление установленного агента; проверенные сценарии и открытые ограничения перечислены в [state.md](state.md).
+Название репозитория — `MSI-remote-agent`; имя проекта и пакета — **AIHub Remote Agent**. Для работы не требуется компьютер определённой марки. Версия исходников **0.3.4** содержит универсальную настройку, восстановление статуса Codex-отправки по заранее известному ID и совместимость с ранее сохранёнными решениями владельца по старым квитанциям. Рабочая конфигурация в пакет не входит. Изменение исходников не означает обновление установленного агента; проверенные сценарии и открытые ограничения перечислены в [state.md](state.md).
 
 > **English:** A local MCP agent for authorized file operations, native/WSL processes, optional Codex Connect and explicitly registered MCP servers. Windows launchers support installation, upgrades and rollback. Configuration, credentials and runtime state stay outside the source repository. See [architecture](docs/ARCHITECTURE.md) and [contributing](CONTRIBUTING.md).
 
@@ -98,6 +98,8 @@ WSL включается парой параметров `--wsl-distro` и `--ws
 
 Во время активной отправки `codex_delivery_status` по умолчанию возвращает сохранённый этап без ожидания IPC. `refresh=false` всегда читает квитанцию, `refresh=true` явно сверяет неизвестную доставку с живой сессией без отправки. Статус `queued`, тайм-аут, пустой composer и отсутствие сообщения в текущем хвосте не подтверждают доставку или её отсутствие. Не повторяйте неизвестную отправку с новым ID и не удаляйте блокировку для обхода сверки.
 
+Для завершённой современной попытки с `outcome_unknown` существует отдельное явное решение владельца — `codex_reset_delivery_block`. Оно принимает неопределённость, включая возможную позднюю доставку, только для одной просмотренной квитанции и позволяет перейти к содержательно новым поручениям. Нужны исходный SHA сообщения, точный адресат и `accept_unknown_outcome=true`; общее поручение продолжать работу не заменяет такое решение. Квитанция остаётся неизвестной, исходное сообщение защищено от повтора, UI не вызывается. Подробные ограничения — в [контракте](docs/CODEX_CONNECT_COMPATIBILITY.md#явное-решение-владельца).
+
 Сообщение ограничено **32768 байтами UTF-8**. Полный диапазон чтения требует совместимого парного адаптера: `--timeout` 1..60, discovery `--limit` 1..200, read `--limit` 1..20 и `--max-chars` 100..200000. Внешние скрипты и их SHA обновляются отдельно; старые пределы CLI не расширяются одним обновлением MSI.
 
 Контракт и границы поддержки: [Codex Connect compatibility](docs/CODEX_CONNECT_COMPATIBILITY.md).
@@ -109,7 +111,7 @@ WSL включается парой параметров `--wsl-distro` и `--ws
 | Диагностика — 1 | `device_status` |
 | Файлы — 7 | `list_directory`, `file_info`, `read_file`, `read_multiple_files`, `write_file`, `edit_file`, `move_file` |
 | Процессы — 5 | `start_process`, `process_output`, `process_input`, `list_process_sessions`, `terminate_process` |
-| Codex — 5 | `codex_doctor`, `codex_discover`, `codex_read_thread`, `codex_send_message`, `codex_delivery_status` |
+| Codex — 6 | `codex_doctor`, `codex_discover`, `codex_read_thread`, `codex_send_message`, `codex_delivery_status`, `codex_reset_delivery_block` |
 | Локальные MCP — 12 | `local_mcp_discover`, `local_mcp_register`, `local_mcp_servers`, `local_mcp_tools`, `local_mcp_call`, `local_mcp_operation`, `local_mcp_resources`, `local_mcp_read_resource`, `local_mcp_prompts`, `local_mcp_get_prompt`, `local_mcp_disconnect`, `local_mcp_unregister` |
 
 Параметры определяются схемами `tools/list`. [Справочник инструментов](docs/TOOLS.md) объясняет назначение и порядок использования. Для агентского продолжения разработки начните с [AGENTS.md](AGENTS.md); для управления машиной — с [remote-machine](skills/remote-machine/SKILL.md).

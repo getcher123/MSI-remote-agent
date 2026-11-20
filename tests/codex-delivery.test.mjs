@@ -105,6 +105,22 @@ test('delivery status can reconcile unknown and persists observation', async (t)
   b.readThread = async () => snapshot([userTurn('unrelated', 'other')]);
   const d2 = await b.deliveryStatus({ receipt_id: r.receipt_id }); assert.equal(d2.observed, true); assert.equal(d2.observed_in_current_tail, false);
 });
+test('a delayed delivery refresh preserves newer receipt metadata under the lock', async (t) => {
+  const { b, request } = await fixture(t);
+  const receipt = await b.sendMessage({ ...request, operation_id: 'test_delayed_refresh' });
+  let releaseRead; let readStarted;
+  const started = new Promise(resolve => { readStarted = resolve; });
+  b.readThread = async () => { readStarted(); return new Promise(resolve => { releaseRead = resolve; }); };
+  const refresh = b.deliveryStatus({ receipt_id: receipt.receipt_id, refresh: true });
+  await started;
+  const newer = { ...receipt, owner_resolution: { action: 'synthetic_future_metadata', at: new Date().toISOString() } };
+  await b.withReceiptLock(() => b.saveReceipt(newer));
+  releaseRead(snapshot([userTurn('late-observed', request.message)]));
+  const result = await refresh;
+  assert.equal(result.phase, 'observed'); assert.equal(result.receipt_persisted, true);
+  assert.deepEqual(result.owner_resolution, newer.owner_resolution);
+  assert.deepEqual((await b.loadReceipts())[0].owner_resolution, newer.owner_resolution);
+});
 test('unavailable live read does not erase prior observation', async (t) => {
   const { b, request } = await fixture(t); const r = await b.sendMessage(request);
   b.readThread = async () => snapshot([userTurn('later', request.message)]); await b.deliveryStatus({ receipt_id: r.receipt_id });
@@ -143,6 +159,52 @@ test('UI error_code and reason accept only bounded ASCII symbolic values', async
     b.runWsl = async () => ({ exit_code: 1, stdout: JSON.stringify({ phase: 'failed_before_send', outcome: 'not_sent', submit_attempted: false, error_code: value, reason: value }), stderr: '' });
     const r = await b.sendMessage({ ...request, operation_id: `test_invalid_symbolic_${index}` });
     assert.equal(r.phase, 'not_sent_ui_preflight'); assert.equal(r.ui_result.error_code, undefined); assert.equal(r.ui_result.reason, undefined);
+  }
+});
+test('inner UI timeout metadata survives while delivery and outer timeout remain distinct', async (t) => {
+  const { b, request } = await fixture(t);
+  b.runWsl = async () => ({ exit_code: 3, timed_out: false, stdout: JSON.stringify({
+    phase: 'outcome_unknown', outcome: 'unknown', submit_attempted: null,
+    last_confirmed_phase: 'ui_dispatched', reason: 'UI_PROCESS_UNAVAILABLE',
+    cause: 'TimeoutExpired', inner_ui_timed_out: true, ui_elapsed_ms: 16021.5,
+    detail: 'private exception text',
+  }), stderr: 'private stderr' });
+  const r = await b.sendMessage({ ...request, operation_id: 'test_inner_ui_timeout' });
+  assert.equal(r.phase, 'outcome_unknown'); assert.equal(r.retry_safe, false);
+  assert.equal(r.ui_timed_out, false); assert.equal(r.ui_result.inner_ui_timed_out, true);
+  assert.equal(r.ui_result.submit_attempted, null); assert.equal(r.ui_result.cause, 'TimeoutExpired');
+  assert.equal(r.ui_result.ui_elapsed_ms, 16021.5);
+  assert.equal(r.ui_result.reason, 'UI_PROCESS_UNAVAILABLE');
+  assert.doesNotMatch(await fs.readFile(b.receiptFile, 'utf8'), /private/);
+  const cached = await b.deliveryStatus({ operation_id: r.operation_id, refresh: false });
+  assert.deepEqual(cached.ui_result, r.ui_result);
+});
+test('inner UI diagnostic fields reject unbounded or free-form values without changing unknown', async (t) => {
+  const invalid = [
+    { cause: 'TimeoutExpired: private path', inner_ui_timed_out: 'true', ui_elapsed_ms: -1, submit_attempted: 'false' },
+    { cause: { message: 'private' }, inner_ui_timed_out: 1, ui_elapsed_ms: 600001 },
+    { cause: ['OSError'], inner_ui_timed_out: null, ui_elapsed_ms: '16000' },
+  ];
+  for (const [index, value] of invalid.entries()) {
+    const { b, request } = await fixture(t);
+    b.runWsl = async () => ({ exit_code: 3, stdout: JSON.stringify({ phase: 'outcome_unknown', outcome: 'unknown', ...value }), stderr: '' });
+    const r = await b.sendMessage({ ...request, operation_id: `test_invalid_ui_metadata_${index}` });
+    assert.equal(r.phase, 'outcome_unknown'); assert.equal(r.retry_safe, false);
+    for (const key of ['cause', 'inner_ui_timed_out', 'ui_elapsed_ms', 'submit_attempted']) assert.equal(r.ui_result[key], undefined);
+    assert.doesNotMatch(await fs.readFile(b.receiptFile, 'utf8'), /private/);
+  }
+});
+test('an explicit inner timeout cannot contradictorily establish a non-submit outcome', async t => {
+  for (const phase of ['failed_before_send', 'staged_not_submitted']) {
+    const { b, request } = await fixture(t);
+    b.runWsl = async () => ({ exit_code: 2, timed_out: false, stdout: JSON.stringify({
+      phase, outcome: 'not_sent', submit_attempted: false, inner_ui_timed_out: true,
+      reason: 'UI_PROCESS_TIMEOUT',
+    }), stderr: '' });
+    const result = await b.sendMessage({ ...request, operation_id: `synthetic_inner_timeout_${phase}` });
+    assert.equal(result.phase, 'outcome_unknown'); assert.equal(result.delivery_outcome, 'unknown');
+    assert.equal(result.retry_safe, false); assert.equal(result.ui_result.inner_ui_timed_out, true);
+    assert.equal(result.draft_retained, undefined);
   }
 });
 test('explicit discovery checks only requested IDs and reports partial failures', async (t) => {
